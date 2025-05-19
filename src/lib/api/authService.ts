@@ -1,0 +1,98 @@
+
+import apiClient from './axiosConfig';
+import { toast } from "@/hooks/use-toast";
+
+interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  first_name?: string;
+  last_name?: string;
+}
+
+interface LoginResponse {
+  token: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+  };
+}
+
+export const authService = {
+  login: async (credentials: LoginCredentials) => {
+    try {
+      const response = await apiClient.post<LoginResponse>('/auth/login/', credentials);
+      localStorage.setItem('safeguard_token', response.data.token);
+      localStorage.setItem('safeguard_user', JSON.stringify(response.data.user));
+      return response.data;
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login Failed",
+        description: "Please check your credentials and try again",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  },
+
+  register: async (userData: RegisterData) => {
+    try {
+      const response = await apiClient.post('/auth/register/', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration Failed",
+        description: "Please check your information and try again",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  },
+
+  logout: () => {
+    localStorage.removeItem('safeguard_token');
+    localStorage.removeItem('safeguard_user');
+  },
+
+  getCurrentUser: () => {
+    const userJson = localStorage.getItem('safeguard_user');
+    return userJson ? JSON.parse(userJson) : null;
+  },
+
+  isAuthenticated: () => {
+    return !!localStorage.getItem('safeguard_token');
+  },
+
+  updateProfile: async (userData: Partial<{
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    address: string;
+  }>) => {
+    try {
+      const response = await apiClient.patch('/users/me/', userData);
+      const updatedUser = response.data;
+      localStorage.setItem('safeguard_user', JSON.stringify(updatedUser));
+      return updatedUser;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      toast({
+        title: "Update Failed",
+        description: "Could not update your profile",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  }
+};

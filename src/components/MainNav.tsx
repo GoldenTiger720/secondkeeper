@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
@@ -21,22 +22,66 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "./Logo";
+import { notificationsService } from "@/lib/api/notificationsService";
+import { authService } from "@/lib/api/authService";
 
 export function MainNav({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) {
-  // Mock data for notifications
-  const notificationCount = 3;
+  // State for notifications
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [username, setUsername] = useState<string>("");
 
   // Helper to check if the current path matches the link
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  // Fetch notifications on component mount
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        if (authService.isAuthenticated()) {
+          const unreadNotifications = await notificationsService.getUnreadNotifications();
+          setNotifications(unreadNotifications.slice(0, 3));
+          setNotificationCount(unreadNotifications.length);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
+
+    const fetchUserInfo = () => {
+      const user = authService.getCurrentUser();
+      if (user) {
+        setUsername(user.first_name || user.username);
+      }
+    };
+
+    fetchNotifications();
+    fetchUserInfo();
+    
+    // Fetch notifications periodically
+    const intervalId = setInterval(fetchNotifications, 30000); // Every 30 seconds
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationsService.markAllAsRead();
+      setNotificationCount(0);
+      setNotifications([]);
+    } catch (error) {
+      console.error("Failed to mark notifications as read:", error);
+    }
   };
 
   const navigationItems = [
@@ -141,28 +186,27 @@ export function MainNav({
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="max-h-80 overflow-auto">
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                  <div className="font-medium">Fall Detected</div>
-                  <div className="text-xs text-muted-foreground">
-                    Living Room - 2 minutes ago
+                {notifications.length > 0 ? (
+                  notifications.map((notification) => (
+                    <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 p-3">
+                      <div className="font-medium">{notification.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {notification.message}
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <div className="p-3 text-center text-muted-foreground">
+                    No new notifications
                   </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                  <div className="font-medium">Smoke Detected</div>
-                  <div className="text-xs text-muted-foreground">
-                    Kitchen - 15 minutes ago
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-                  <div className="font-medium">Unauthorized Person</div>
-                  <div className="text-xs text-muted-foreground">
-                    Front Door - 1 hour ago
-                  </div>
-                </DropdownMenuItem>
+                )}
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="justify-center font-medium">
-                View all notifications
+              <DropdownMenuItem 
+                className="justify-center font-medium"
+                onClick={handleMarkAllAsRead}
+              >
+                Mark all as read
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -176,7 +220,7 @@ export function MainNav({
                 size="sm"
                 className="gap-1 px-2 h-8 text-xs hidden sm:flex"
               >
-                <span>Danylo</span>
+                <span>{username || "User"}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
@@ -190,7 +234,13 @@ export function MainNav({
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex items-center gap-2">
+              <DropdownMenuItem 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  authService.logout();
+                  window.location.href = "/login";
+                }}
+              >
                 <LogOut className="h-4 w-4" />
                 <span>Logout</span>
               </DropdownMenuItem>
@@ -205,7 +255,7 @@ export function MainNav({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>John Doe</DropdownMenuLabel>
+              <DropdownMenuLabel>{username || "User"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="flex items-center gap-2">
                 <User className="h-4 w-4" />
@@ -216,7 +266,13 @@ export function MainNav({
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex items-center gap-2">
+              <DropdownMenuItem 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  authService.logout();
+                  window.location.href = "/login";
+                }}
+              >
                 <LogOut className="h-4 w-4" />
                 <span>Logout</span>
               </DropdownMenuItem>

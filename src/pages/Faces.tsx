@@ -1,18 +1,19 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Upload, User, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { facesService, AuthorizedFace as AuthorizedFaceType } from "@/lib/api/facesService";
 
 interface FaceProps {
   id: string;
   name: string;
   imageUrl?: string;
   role: "primary" | "caregiver" | "family" | "other";
+  onDelete: (id: string) => void;
 }
 
 const getRandomColor = (str: string) => {
@@ -38,14 +39,11 @@ const getRandomColor = (str: string) => {
   return colors[index];
 };
 
-const AuthorizedFace = ({ id, name, imageUrl, role }: FaceProps) => {
+const AuthorizedFace = ({ id, name, imageUrl, role, onDelete }: FaceProps) => {
   const { toast } = useToast();
   
   const handleDelete = () => {
-    toast({
-      title: "Face Removed",
-      description: `${name} has been removed from authorized faces.`,
-    });
+    onDelete(id);
   };
   
   const bgColor = getRandomColor(name);
@@ -83,17 +81,25 @@ const AuthorizedFace = ({ id, name, imageUrl, role }: FaceProps) => {
 
 const Faces = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [faces, setFaces] = useState<AuthorizedFaceType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Mock data
-  const faces: FaceProps[] = [
-    { id: "1", name: "Mary Johnson", role: "primary" },
-    { id: "2", name: "Robert Williams", role: "caregiver" },
-    { id: "3", name: "Susan Lee", role: "family" },
-    { id: "4", name: "David Garcia", role: "other" },
-    { id: "5", name: "Jennifer Smith", role: "family" },
-    { id: "6", name: "Michael Brown", role: "caregiver" },
-  ];
+  useEffect(() => {
+    const loadFaces = async () => {
+      try {
+        setIsLoading(true);
+        const data = await facesService.getAllFaces();
+        setFaces(data);
+      } catch (error) {
+        console.error("Failed to load faces:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFaces();
+  }, []);
 
   const filteredFaces = faces.filter(face => 
     face.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -112,6 +118,19 @@ const Faces = () => {
       title: "Upload Image",
       description: "This feature would open a dialog to upload face images.",
     });
+  };
+
+  const handleDeleteFace = async (id: string) => {
+    try {
+      await facesService.removeFace(id);
+      setFaces(faces.filter(face => face.id !== id));
+      toast({
+        title: "Face Removed",
+        description: "Face has been removed from authorized faces.",
+      });
+    } catch (error) {
+      console.error("Failed to delete face:", error);
+    }
   };
 
   return (
@@ -149,11 +168,30 @@ const Faces = () => {
               />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredFaces.map((face) => (
-                <AuthorizedFace key={face.id} {...face} />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <p className="text-muted-foreground">Loading...</p>
+              </div>
+            ) : filteredFaces.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredFaces.map((face) => (
+                  <AuthorizedFace 
+                    key={face.id} 
+                    id={face.id}
+                    name={face.name}
+                    role={face.role}
+                    imageUrl={face.image_url}
+                    onDelete={handleDeleteFace}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center py-8">
+                <p className="text-muted-foreground">
+                  {searchQuery ? "No faces match your search" : "No faces have been added yet"}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

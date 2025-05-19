@@ -109,7 +109,7 @@ export function AlertCard({
             <Button
               variant="secondary"
               size="icon"
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 "
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
               onClick={() => setVideoModalOpen(true)}
             >
               <Play className="h-4 w-4" />

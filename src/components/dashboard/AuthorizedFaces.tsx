@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -34,12 +35,14 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { facesService, AuthorizedFace as AuthorizedFaceType } from "@/lib/api/facesService";
 
 interface FaceProps {
   id: string;
   name: string;
   imageUrl?: string;
   role: "primary" | "caregiver" | "family" | "other";
+  onDelete: (id: string) => void;
 }
 
 const getRandomColor = (str: string) => {
@@ -65,14 +68,11 @@ const getRandomColor = (str: string) => {
   return colors[index];
 };
 
-export function AuthorizedFace({ id, name, imageUrl, role }: FaceProps) {
+export function AuthorizedFace({ id, name, imageUrl, role, onDelete }: FaceProps) {
   const { toast } = useToast();
 
   const handleDelete = () => {
-    toast({
-      title: "Face Removed",
-      description: `${name} has been removed from authorized faces.`,
-    });
+    onDelete(id);
   };
 
   const bgColor = getRandomColor(name);
@@ -124,36 +124,27 @@ const addPersonSchema = z.object({
 type AddPersonFormValues = z.infer<typeof addPersonSchema>;
 
 export function AuthorizedFacesCard() {
-  const faces: FaceProps[] = [
-    {
-      id: "1",
-      name: "Mary Johnson",
-      role: "primary",
-      imageUrl: "/images/authorized_people/mary.png",
-    },
-    {
-      id: "2",
-      name: "Robert Williams",
-      role: "caregiver",
-      imageUrl: "/images/authorized_people/robert.png",
-    },
-    {
-      id: "3",
-      name: "Susan Lee",
-      role: "family",
-      imageUrl: "/images/authorized_people/susan.png",
-    },
-    {
-      id: "4",
-      name: "David Garcia",
-      role: "other",
-      imageUrl: "/images/authorized_people/david.png",
-    },
-  ];
-
+  const [faces, setFaces] = useState<AuthorizedFaceType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const { toast } = useToast();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadFaces = async () => {
+      try {
+        setIsLoading(true);
+        const data = await facesService.getAllFaces();
+        setFaces(data);
+      } catch (error) {
+        console.error("Failed to load faces:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFaces();
+  }, []);
 
   const form = useForm<AddPersonFormValues>({
     resolver: zodResolver(addPersonSchema),
@@ -175,29 +166,30 @@ export function AuthorizedFacesCard() {
     }
   };
 
-  const onSubmit = (data: AddPersonFormValues) => {
-    // Simulate sending data to server
-    console.log("Submitting new person:", data);
-
-    // Create form data to send image
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("role", data.role);
-    if (data.image) {
-      formData.append("image", data.image);
+  const onSubmit = async (data: AddPersonFormValues) => {
+    try {
+      const newFace = await facesService.addFace({
+        name: data.name,
+        role: data.role,
+        face_image: data.image,
+      });
+      
+      setFaces(currentFaces => [...currentFaces, newFace]);
+      setIsAddPersonOpen(false);
+      form.reset();
+      setPreviewImage(null);
+    } catch (error) {
+      console.error("Failed to add face:", error);
     }
+  };
 
-    // In a real app, we would send formData to the server
-    // fetch('/api/faces', { method: 'POST', body: formData })
-
-    toast({
-      title: "Person Added",
-      description: `${data.name} has been added as a ${data.role}.`,
-    });
-
-    setIsAddPersonOpen(false);
-    form.reset();
-    setPreviewImage(null);
+  const handleDeleteFace = async (id: string) => {
+    try {
+      await facesService.removeFace(id);
+      setFaces(currentFaces => currentFaces.filter(face => face.id !== id));
+    } catch (error) {
+      console.error("Failed to delete face:", error);
+    }
   };
 
   return (
@@ -211,11 +203,28 @@ export function AuthorizedFacesCard() {
         </CardHeader>
         <CardContent className="p-0 px-6">
           <ScrollArea className="h-64 pr-4">
-            <div className="space-y-4">
-              {faces.map((face) => (
-                <AuthorizedFace key={face.id} {...face} />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-muted-foreground">Loading...</p>
+              </div>
+            ) : faces.length > 0 ? (
+              <div className="space-y-4">
+                {faces.map((face) => (
+                  <AuthorizedFace 
+                    key={face.id} 
+                    id={face.id} 
+                    name={face.name} 
+                    role={face.role}
+                    imageUrl={face.image_url}
+                    onDelete={handleDeleteFace}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-muted-foreground">No authorized faces added yet</p>
+              </div>
+            )}
           </ScrollArea>
         </CardContent>
         <CardFooter className="pt-6">

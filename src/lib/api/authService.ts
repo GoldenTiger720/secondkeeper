@@ -1,5 +1,4 @@
-
-import apiClient from './axiosConfig';
+import apiClient from "./axiosConfig";
 import { toast } from "@/hooks/use-toast";
 
 interface LoginCredentials {
@@ -11,8 +10,8 @@ interface RegisterData {
   username: string;
   email: string;
   password: string;
-  first_name?: string;
-  last_name?: string;
+  full_name: string;
+  phone_number: string;
 }
 
 interface LoginResponse {
@@ -21,20 +20,26 @@ interface LoginResponse {
     id: string;
     username: string;
     email: string;
-    first_name: string;
-    last_name: string;
+    full_name: string;
+    phone_number: string;
   };
 }
 
 export const authService = {
   login: async (credentials: LoginCredentials) => {
     try {
-      const response = await apiClient.post<LoginResponse>('/auth/login/', credentials);
-      localStorage.setItem('safeguard_token', response.data.token);
-      localStorage.setItem('safeguard_user', JSON.stringify(response.data.user));
+      const response = await apiClient.post<LoginResponse>(
+        "/auth/login/",
+        credentials
+      );
+      localStorage.setItem("safeguard_token", response.data.token);
+      localStorage.setItem(
+        "safeguard_user",
+        JSON.stringify(response.data.user)
+      );
       return response.data;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       toast({
         title: "Login Failed",
         description: "Please check your credentials and try again",
@@ -46,13 +51,14 @@ export const authService = {
 
   register: async (userData: RegisterData) => {
     try {
-      const response = await apiClient.post('/auth/register/', userData);
+      const response = await apiClient.post("/auth/register/", userData);
       return response.data;
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       toast({
         title: "Registration Failed",
-        description: "Please check your information and try again",
+        description:
+          "Your password must contain a mix of letters, numbers, and uppercase letters.",
         variant: "destructive",
       });
       throw error;
@@ -60,33 +66,35 @@ export const authService = {
   },
 
   logout: () => {
-    localStorage.removeItem('safeguard_token');
-    localStorage.removeItem('safeguard_user');
+    localStorage.removeItem("safeguard_token");
+    localStorage.removeItem("safeguard_user");
   },
 
   getCurrentUser: () => {
-    const userJson = localStorage.getItem('safeguard_user');
+    const userJson = localStorage.getItem("safeguard_user");
     return userJson ? JSON.parse(userJson) : null;
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem('safeguard_token');
+    return !!localStorage.getItem("safeguard_token");
   },
 
-  updateProfile: async (userData: Partial<{
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    address: string;
-  }>) => {
+  updateProfile: async (
+    userData: Partial<{
+      first_name: string;
+      last_name: string;
+      email: string;
+      phone_number: string;
+      address: string;
+    }>
+  ) => {
     try {
-      const response = await apiClient.patch('/users/me/', userData);
+      const response = await apiClient.patch("/users/me/", userData);
       const updatedUser = response.data;
-      localStorage.setItem('safeguard_user', JSON.stringify(updatedUser));
+      localStorage.setItem("safeguard_user", JSON.stringify(updatedUser));
       return updatedUser;
     } catch (error) {
-      console.error('Profile update error:', error);
+      console.error("Profile update error:", error);
       toast({
         title: "Update Failed",
         description: "Could not update your profile",
@@ -94,5 +102,5 @@ export const authService = {
       });
       throw error;
     }
-  }
+  },
 };

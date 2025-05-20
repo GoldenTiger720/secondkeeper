@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -27,16 +26,18 @@ import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react";
 import { authService } from "@/lib/api/authService";
 import { toast } from "@/hooks/use-toast";
 
-const signupSchema = z.object({
-  full_name: z.string().min(2, "Full name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone_number: z.string().min(10, "Please enter a valid phone number"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirm_password: z.string(),
-}).refine(data => data.password === data.confirm_password, {
-  message: "Passwords do not match",
-  path: ["confirm_password"],
-});
+const signupSchema = z
+  .object({
+    full_name: z.string().min(2, "Full name must be at least 2 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    phone_number: z.string().min(10, "Please enter a valid phone number"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirm_password: z.string(),
+  })
+  .refine((data) => data.password === data.confirm_password, {
+    message: "Passwords do not match",
+    path: ["confirm_password"],
+  });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -60,39 +61,38 @@ export default function Signup() {
   async function onSubmit(data: SignupFormValues) {
     setIsLoading(true);
     try {
-      const nameParts = data.full_name.trim().split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
-      
+      if (data.password !== data.confirm_password) {
+        throw new Error("Passwords do not match");
+      }
       const userData = {
+        full_name: data.full_name,
         username: data.email,
         email: data.email,
-        password: data.password,
         phone_number: data.phone_number,
-        first_name: firstName,
-        last_name: lastName,
+        password: data.password,
       };
-      
+
       await authService.register(userData);
-      
+
       // Auto-login after successful registration
       const loginData = {
         username: data.email,
         password: data.password,
       };
       await authService.login(loginData);
-      
+
       toast({
         title: "Account created successfully!",
         description: "Welcome to SafeGuard, your security assistant.",
       });
-      
+
       navigate("/");
     } catch (error) {
       console.error("Registration error:", error);
       toast({
         title: "Registration failed",
-        description: "There was a problem creating your account. Please try again.",
+        description:
+          "Your password must contain a mix of letters, numbers, and uppercase letters. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -105,22 +105,29 @@ export default function Signup() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Logo className="mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create your account</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Create your account
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Join SafeGuard to start protecting what matters most
           </p>
         </div>
-        
+
         <Card className="border-none shadow-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
           <CardHeader className="space-y-1 pb-2">
-            <CardTitle className="text-2xl font-bold text-center">Sign up</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Sign up
+            </CardTitle>
             <CardDescription className="text-center">
               Enter your information to create an account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="full_name"
@@ -130,10 +137,10 @@ export default function Signup() {
                       <FormControl>
                         <div className="relative">
                           <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input 
-                            placeholder="John Doe" 
-                            className="pl-10" 
-                            {...field} 
+                          <Input
+                            placeholder="John Doe"
+                            className="pl-10"
+                            {...field}
                             disabled={isLoading}
                           />
                         </div>
@@ -142,7 +149,7 @@ export default function Signup() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -152,10 +159,10 @@ export default function Signup() {
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input 
-                            type="email" 
-                            placeholder="name@example.com" 
-                            className="pl-10" 
+                          <Input
+                            type="email"
+                            placeholder="name@example.com"
+                            className="pl-10"
                             {...field}
                             disabled={isLoading}
                           />
@@ -165,7 +172,7 @@ export default function Signup() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="phone_number"
@@ -175,9 +182,9 @@ export default function Signup() {
                       <FormControl>
                         <div className="relative">
                           <Phone className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input 
-                            placeholder="+1 (555) 123-4567" 
-                            className="pl-10" 
+                          <Input
+                            placeholder="+1 (555) 123-4567"
+                            className="pl-10"
                             {...field}
                             disabled={isLoading}
                           />
@@ -187,7 +194,7 @@ export default function Signup() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="password"
@@ -197,10 +204,10 @@ export default function Signup() {
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input 
-                            type={showPassword ? "text" : "password"} 
+                          <Input
+                            type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10" 
+                            className="pl-10"
                             {...field}
                             disabled={isLoading}
                           />
@@ -223,7 +230,7 @@ export default function Signup() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="confirm_password"
@@ -233,10 +240,10 @@ export default function Signup() {
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input 
-                            type={showConfirmPassword ? "text" : "password"} 
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10" 
+                            className="pl-10"
                             {...field}
                             disabled={isLoading}
                           />
@@ -245,7 +252,9 @@ export default function Signup() {
                             variant="ghost"
                             size="sm"
                             className="absolute right-0 top-0 h-10 px-3"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
                           >
                             {showConfirmPassword ? (
                               <EyeOff className="h-4 w-4" />
@@ -259,12 +268,8 @@ export default function Signup() {
                     </FormItem>
                   )}
                 />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                >
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
@@ -273,17 +278,26 @@ export default function Signup() {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center text-gray-600 dark:text-gray-400">
               By creating an account, you agree to our{" "}
-              <Link to="/terms" className="text-primary underline hover:text-primary/80">
+              <Link
+                to="/terms"
+                className="text-primary underline hover:text-primary/80"
+              >
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link to="/privacy" className="text-primary underline hover:text-primary/80">
+              <Link
+                to="/privacy"
+                className="text-primary underline hover:text-primary/80"
+              >
                 Privacy Policy
               </Link>
             </div>
             <div className="text-sm text-center">
               Already have an account?{" "}
-              <Link to="/login" className="text-primary font-medium hover:underline">
+              <Link
+                to="/login"
+                className="text-primary font-medium hover:underline"
+              >
                 Log in
               </Link>
             </div>

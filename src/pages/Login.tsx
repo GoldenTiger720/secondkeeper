@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -54,12 +53,12 @@ export default function Login() {
         username: data.email,
         password: data.password,
       });
-      
+
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
-      
+
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
@@ -78,22 +77,29 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Logo className="mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Welcome back
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Sign in to access your SafeGuard dashboard
           </p>
         </div>
-        
+
         <Card className="border-none shadow-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
           <CardHeader className="space-y-1 pb-2">
-            <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Login
+            </CardTitle>
             <CardDescription className="text-center">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -103,10 +109,10 @@ export default function Login() {
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input 
-                            type="email" 
-                            placeholder="name@example.com" 
-                            className="pl-10" 
+                          <Input
+                            type="email"
+                            placeholder="name@example.com"
+                            className="pl-10"
                             {...field}
                             disabled={isLoading}
                           />
@@ -116,7 +122,7 @@ export default function Login() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="password"
@@ -126,10 +132,10 @@ export default function Login() {
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                          <Input 
-                            type={showPassword ? "text" : "password"} 
+                          <Input
+                            type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10" 
+                            className="pl-10"
                             {...field}
                             disabled={isLoading}
                           />
@@ -152,7 +158,7 @@ export default function Login() {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <input
@@ -160,26 +166,22 @@ export default function Login() {
                       id="remember"
                       className="h-4 w-4 rounded border-gray-300 focus:ring-primary"
                     />
-                    <label 
-                      htmlFor="remember" 
+                    <label
+                      htmlFor="remember"
                       className="text-sm text-gray-600 dark:text-gray-400"
                     >
                       Remember me
                     </label>
                   </div>
-                  <Link 
-                    to="/forgot-password" 
+                  <Link
+                    to="/forgot-password"
                     className="text-sm text-primary hover:underline"
                   >
                     Forgot password?
                   </Link>
                 </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                >
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
@@ -188,7 +190,10 @@ export default function Login() {
           <CardFooter className="flex justify-center">
             <div className="text-sm text-center">
               Don't have an account?{" "}
-              <Link to="/signup" className="text-primary font-medium hover:underline">
+              <Link
+                to="/signup"
+                className="text-primary font-medium hover:underline"
+              >
                 Sign up
               </Link>
             </div>

@@ -1,18 +1,17 @@
-
-import axios from 'axios';
+import axios from "axios";
 
 // Create an axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://secondkeeper.cc/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Add a request interceptor to include auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('safeguard_token');
+    const token = localStorage.getItem("safeguard_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,7 +27,7 @@ apiClient.interceptors.response.use(
     const { response } = error;
     // Handle authentication errors
     if (response && response.status === 401) {
-      localStorage.removeItem('safeguard_token');
+      localStorage.removeItem("safeguard_token");
       // Redirect to login page in production
     }
     return Promise.reject(error);

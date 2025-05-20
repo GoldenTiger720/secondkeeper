@@ -11,7 +11,7 @@ const apiClient = axios.create({
 // Add a request interceptor to include auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("safeguard_token");
+    const token = localStorage.getItem("secondkeeper_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -27,7 +27,7 @@ apiClient.interceptors.response.use(
     const { response } = error;
     // Handle authentication errors
     if (response && response.status === 401) {
-      localStorage.removeItem("safeguard_token");
+      localStorage.removeItem("secondkeeper_token");
       // Redirect to login page in production
     }
     return Promise.reject(error);

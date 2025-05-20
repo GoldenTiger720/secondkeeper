@@ -50,7 +50,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       await authService.login({
-        username: data.email,
+        email: data.email,
         password: data.password,
       });
 

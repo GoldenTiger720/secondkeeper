@@ -1,20 +1,24 @@
-
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactNode,
+} from "react";
 import { authService } from "@/lib/api/authService";
 
 interface User {
   id: string;
   username: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  password: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: { username: string; password: string }) => Promise<void>;
+  login: (credentials: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
 }
@@ -43,9 +47,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const login = async (credentials: { username: string; password: string }) => {
+  const login = async (credentials: { email: string; password: string }) => {
     const response = await authService.login(credentials);
-    setUser(response.user);
+    console.log(response.data.data);
+    setUser(response.data.data.user);
   };
 
   const logout = async () => {

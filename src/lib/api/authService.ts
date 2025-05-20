@@ -1,11 +1,9 @@
 import apiClient from "./axiosConfig";
 import { toast } from "@/hooks/use-toast";
-
 interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
 }
-
 interface RegisterData {
   username: string;
   email: string;
@@ -28,14 +26,19 @@ interface LoginResponse {
 export const authService = {
   login: async (credentials: LoginCredentials) => {
     try {
-      const response = await apiClient.post<LoginResponse>(
-        "/auth/login/",
-        credentials
+      const response = await apiClient.post("/auth/login/", credentials);
+      console.log(response.data.data.tokens.refresh);
+      localStorage.setItem(
+        "secondkeeper_token",
+        response.data.data.tokens.refresh
       );
-      localStorage.setItem("safeguard_token", response.data.token);
+      localStorage.setItem(
+        "secondkeeper_access_token",
+        response.data.data.tokens.access
+      );
       localStorage.setItem(
         "safeguard_user",
-        JSON.stringify(response.data.user)
+        JSON.stringify(response.data.data.user)
       );
       return response.data;
     } catch (error) {
@@ -66,7 +69,7 @@ export const authService = {
   },
 
   logout: () => {
-    localStorage.removeItem("safeguard_token");
+    localStorage.removeItem("secondkeeper_token");
     localStorage.removeItem("safeguard_user");
   },
 
@@ -76,13 +79,12 @@ export const authService = {
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem("safeguard_token");
+    return !!localStorage.getItem("secondkeeper_token");
   },
 
   updateProfile: async (
     userData: Partial<{
-      first_name: string;
-      last_name: string;
+      full_name: string;
       email: string;
       phone_number: string;
       address: string;

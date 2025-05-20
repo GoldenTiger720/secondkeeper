@@ -100,7 +100,7 @@ const Index = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4">
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <AddCameraDialog />
+          {/* <AddCameraDialog /> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -207,9 +207,9 @@ const Index = () => {
               </CardContent>
             </Card>
           </div>
-          <div>
+          {/* <div>
             <AuthorizedFacesCard />
-          </div>
+          </div> */}
         </div>
       </div>
     </DashboardLayout>

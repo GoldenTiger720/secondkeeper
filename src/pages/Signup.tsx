@@ -25,6 +25,7 @@ import { Logo } from "@/components/Logo";
 import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react";
 import { authService } from "@/lib/api/authService";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const signupSchema = z
   .object({
@@ -44,6 +45,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function Signup() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -79,7 +81,10 @@ export default function Signup() {
         email: data.email,
         password: data.password,
       };
-      await authService.login(loginData);
+      await login({
+        email: data.email,
+        password: data.password,
+      });
 
       toast({
         title: "Account created successfully!",

@@ -27,7 +27,6 @@ export const authService = {
   login: async (credentials: LoginCredentials) => {
     try {
       const response = await apiClient.post("/auth/login/", credentials);
-      console.log(response.data.data.tokens.refresh);
       localStorage.setItem(
         "secondkeeper_token",
         response.data.data.tokens.refresh

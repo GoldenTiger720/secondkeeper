@@ -25,6 +25,7 @@ import { Logo } from "@/components/Logo";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { authService } from "@/lib/api/authService";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -53,12 +54,10 @@ export default function Login() {
         email: data.email,
         password: data.password,
       });
-
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
-
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);

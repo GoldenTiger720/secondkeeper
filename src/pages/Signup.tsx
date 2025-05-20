@@ -76,7 +76,7 @@ export default function Signup() {
 
       // Auto-login after successful registration
       const loginData = {
-        username: data.email,
+        email: data.email,
         password: data.password,
       };
       await authService.login(loginData);

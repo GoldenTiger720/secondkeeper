@@ -40,6 +40,7 @@ export const authService = {
         "safeguard_user",
         JSON.stringify(response.data.data.user)
       );
+
       return response.data;
     } catch (error) {
       console.error("Login error:", error);
@@ -71,6 +72,7 @@ export const authService = {
   logout: () => {
     localStorage.removeItem("secondkeeper_token");
     localStorage.removeItem("safeguard_user");
+    localStorage.removeItem("secondkeeper_access_token");
   },
 
   getCurrentUser: () => {

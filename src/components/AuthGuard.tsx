@@ -1,4 +1,3 @@
-
 import { ReactNode, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,10 +8,7 @@ interface AuthGuardProps {
   requireAuth?: boolean;
 }
 
-export function AuthGuard({ 
-  children, 
-  requireAuth = true 
-}: AuthGuardProps) {
+export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
   const { isAuthenticated, isLoading, checkAuth } = useAuth();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
@@ -22,7 +18,7 @@ export function AuthGuard({
       await checkAuth();
       setIsChecking(false);
     };
-    
+
     verify();
   }, [checkAuth]);
 

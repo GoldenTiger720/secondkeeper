@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,51 +28,78 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/login" element={
-                <AuthGuard requireAuth={false}>
-                  <Login />
-                </AuthGuard>
-              } />
-              <Route path="/signup" element={
-                <AuthGuard requireAuth={false}>
-                  <Signup />
-                </AuthGuard>
-              } />
-              <Route path="/" element={
-                <AuthGuard>
-                  <Index />
-                </AuthGuard>
-              } />
-              <Route path="/cameras" element={
-                <AuthGuard>
-                  <Cameras />
-                </AuthGuard>
-              } />
-              <Route path="/faces" element={
-                <AuthGuard>
-                  <Faces />
-                </AuthGuard>
-              } />
-              <Route path="/notifications" element={
-                <AuthGuard>
-                  <Notifications />
-                </AuthGuard>
-              } />
-              <Route path="/billing" element={
-                <AuthGuard>
-                  <Billing />
-                </AuthGuard>
-              } />
-              <Route path="/help" element={
-                <AuthGuard>
-                  <Help />
-                </AuthGuard>
-              } />
-              <Route path="/admin/*" element={
-                <AuthGuard>
-                  <Admin />
-                </AuthGuard>
-              } />
+              <Route
+                path="/login"
+                element={
+                  <AuthGuard requireAuth={false}>
+                    <Login />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/signup"
+                element={
+                  <AuthGuard requireAuth={false}>
+                    <Signup />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/"
+                element={
+                  <AuthGuard>
+                    <Index />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/cameras"
+                element={
+                  <AuthGuard>
+                    <Cameras />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/faces"
+                element={
+                  <AuthGuard>
+                    <Faces />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <AuthGuard>
+                    <Notifications />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/billing"
+                element={
+                  <AuthGuard>
+                    <Billing />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/help"
+                element={
+                  <AuthGuard>
+                    <Help />
+                  </AuthGuard>
+                }
+              />
+              <Route
+                path="/admin/*"
+                element={
+                  <AuthGuard>
+                    <Admin />
+                  </AuthGuard>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

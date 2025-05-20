@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
@@ -27,6 +26,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "./Logo";
 import { notificationsService } from "@/lib/api/notificationsService";
 import { authService } from "@/lib/api/authService";
+import { useAuth } from "@/hooks/useAuth";
 
 export function MainNav({
   className,
@@ -37,6 +37,7 @@ export function MainNav({
   const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
   const [username, setUsername] = useState<string>("");
 
   // Helper to check if the current path matches the link
@@ -49,7 +50,8 @@ export function MainNav({
     const fetchNotifications = async () => {
       try {
         if (authService.isAuthenticated()) {
-          const unreadNotifications = await notificationsService.getUnreadNotifications();
+          const unreadNotifications =
+            await notificationsService.getUnreadNotifications();
           setNotifications(unreadNotifications.slice(0, 3));
           setNotificationCount(unreadNotifications.length);
         }
@@ -58,21 +60,16 @@ export function MainNav({
       }
     };
 
-    const fetchUserInfo = () => {
-      const user = authService.getCurrentUser();
-      if (user) {
-        setUsername(user.first_name || user.username);
-      }
-    };
+    if (user) {
+      setUsername(user.full_name || user.username);
+    }
+    // fetchNotifications();
 
-    fetchNotifications();
-    fetchUserInfo();
-    
     // Fetch notifications periodically
     const intervalId = setInterval(fetchNotifications, 30000); // Every 30 seconds
-    
+
     return () => clearInterval(intervalId);
-  }, []);
+  }, [user]);
 
   const handleMarkAllAsRead = async () => {
     try {
@@ -188,7 +185,10 @@ export function MainNav({
               <div className="max-h-80 overflow-auto">
                 {notifications.length > 0 ? (
                   notifications.map((notification) => (
-                    <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 p-3">
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className="flex flex-col items-start gap-1 p-3"
+                    >
                       <div className="font-medium">{notification.title}</div>
                       <div className="text-xs text-muted-foreground">
                         {notification.message}
@@ -202,7 +202,7 @@ export function MainNav({
                 )}
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="justify-center font-medium"
                 onClick={handleMarkAllAsRead}
               >
@@ -234,7 +234,7 @@ export function MainNav({
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="flex items-center gap-2"
                 onClick={() => {
                   authService.logout();
@@ -266,7 +266,7 @@ export function MainNav({
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="flex items-center gap-2"
                 onClick={() => {
                   authService.logout();

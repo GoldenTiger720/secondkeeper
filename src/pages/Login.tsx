@@ -36,6 +36,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -50,7 +51,7 @@ export default function Login() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     try {
-      await authService.login({
+      await login({
         email: data.email,
         password: data.password,
       });

@@ -56,14 +56,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = async (credentials: { email: string; password: string }) => {
-    return authService.login(credentials).then(() => {
-      const currentUser = authService.getCurrentUser();
-      if (currentUser) {
-        setUser(currentUser);
-        setIsAuthenticated(true);
-      }
-    });
+  const login = async (credentials: {
+    email: string;
+    password: string;
+  }): Promise<void> => {
+    await authService.login(credentials);
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+      setIsAuthenticated(true);
+    }
   };
 
   const logout = async () => {

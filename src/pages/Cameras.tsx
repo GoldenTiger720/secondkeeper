@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { CameraStatusCard } from "@/components/dashboard/CameraStatusCard";
 import { AddCameraDialog } from "@/components/dashboard/AddCameraDialog";
@@ -48,10 +47,11 @@ const cameras = [
 
 const Cameras = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const filteredCameras = cameras.filter(camera => 
-    camera.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    camera.ipAddress.includes(searchQuery)
+
+  const filteredCameras = cameras.filter(
+    (camera) =>
+      camera.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      camera.ipAddress.includes(searchQuery)
   );
 
   return (
@@ -69,14 +69,14 @@ const Cameras = () => {
           <CardContent>
             <div className="flex items-center space-x-2 mb-6 relative">
               <Search className="h-5 w-5 absolute left-3 text-muted-foreground" />
-              <Input 
-                placeholder="Search cameras by name or IP..." 
+              <Input
+                placeholder="Search cameras by name or IP..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredCameras.map((camera) => (
                 <CameraStatusCard key={camera.id} {...camera} />

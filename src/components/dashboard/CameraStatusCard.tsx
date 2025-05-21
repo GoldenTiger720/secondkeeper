@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,11 +60,7 @@ export function CameraStatusCard({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="flex-1"
-                >
+                <Button variant="secondary" size="sm" className="flex-1">
                   <Video className="h-4 w-4 mr-2" />
                   View Stream
                 </Button>
@@ -77,19 +72,11 @@ export function CameraStatusCard({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-          >
+          <Button variant="outline" size="icon" className="h-8 w-8">
             <Pencil className="h-4 w-4" />
             <span className="sr-only">Edit camera</span>
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-          >
+          <Button variant="outline" size="icon" className="h-8 w-8">
             <Trash className="h-4 w-4" />
             <span className="sr-only">Delete camera</span>
           </Button>

@@ -47,18 +47,18 @@ export function MainNav({
 
   // Fetch notifications on component mount
   useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        if (authService.isAuthenticated()) {
-          const unreadNotifications =
-            await notificationsService.getUnreadNotifications();
-          setNotifications(unreadNotifications.slice(0, 3));
-          setNotificationCount(unreadNotifications.length);
-        }
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
+    // const fetchNotifications = async () => {
+    //   try {
+    //     if (authService.isAuthenticated()) {
+    //       const unreadNotifications =
+    //         await notificationsService.getUnreadNotifications();
+    //       setNotifications(unreadNotifications.slice(0, 3));
+    //       setNotificationCount(unreadNotifications.length);
+    //     }
+    //   } catch (error) {
+    //     console.error("Failed to fetch notifications:", error);
+    //   }
+    // };
 
     if (user) {
       setUsername(user.full_name || user.username);
@@ -66,9 +66,9 @@ export function MainNav({
     // fetchNotifications();
 
     // Fetch notifications periodically
-    const intervalId = setInterval(fetchNotifications, 30000); // Every 30 seconds
+    // const intervalId = setInterval(fetchNotifications, 30000); // Every 30 seconds
 
-    return () => clearInterval(intervalId);
+    // return () => clearInterval(intervalId);
   }, [user]);
 
   const handleMarkAllAsRead = async () => {

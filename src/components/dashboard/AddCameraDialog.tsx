@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { camerasService } from "@/lib/api/camerasService";
 
 export function AddCameraDialog() {
   const { toast } = useToast();
@@ -21,8 +21,7 @@ export function AddCameraDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    ipAddress: "",
-    rtspUrl: "",
+    stream_url: "",
     username: "",
     password: "",
   });
@@ -41,18 +40,17 @@ export function AddCameraDialog() {
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+      await camerasService.addCamera(formData);
+
       toast({
         title: "Camera added successfully",
         description: `${formData.name} has been added to your cameras.`,
       });
-      
+
       setOpen(false);
       setFormData({
         name: "",
-        ipAddress: "",
-        rtspUrl: "",
+        stream_url: "",
         username: "",
         password: "",
       });
@@ -95,22 +93,13 @@ export function AddCameraDialog() {
                 required
               />
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="ipAddress">IP Address</Label>
+              <Label htmlFor="stream_url">RTSP URL or Host Link</Label>
               <Input
-                id="ipAddress"
-                name="ipAddress"
-                value={formData.ipAddress}
-                onChange={handleChange}
-                placeholder="192.168.1.10"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="rtspUrl">RTSP URL or Host Link</Label>
-              <Input
-                id="rtspUrl"
-                name="rtspUrl"
-                value={formData.rtspUrl}
+                id="stream_url"
+                name="stream_url"
+                value={formData.stream_url}
                 onChange={handleChange}
                 placeholder="rtsp://username:password@192.168.1.10:554/stream"
                 required

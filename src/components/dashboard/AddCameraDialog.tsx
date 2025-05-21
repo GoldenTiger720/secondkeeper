@@ -40,7 +40,7 @@ export function AddCameraDialog() {
 
     try {
       // Simulate API call
-      await camerasService.addCamera(formData);
+      const response = await camerasService.addCamera(formData);
 
       toast({
         title: "Camera added successfully",
@@ -55,9 +55,19 @@ export function AddCameraDialog() {
         password: "",
       });
     } catch (error) {
+      console.log("Error adding camera:", error);
+      let errorMessage = "An unexpected error occurred";
+      if (error.response && error.response.data) {
+        const { message, errors } = error.response.data;
+        if (errors && errors.length > 0) {
+          errorMessage = errors.join(", ");
+        } else if (message) {
+          errorMessage = message;
+        }
+      }
       toast({
-        title: "Error adding camera",
-        description: "Please check your camera details and try again.",
+        title: "Camera addition failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

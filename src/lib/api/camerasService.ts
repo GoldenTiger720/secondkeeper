@@ -20,7 +20,7 @@ export const camerasService = {
   getAllCameras: async (): Promise<Camera[]> => {
     try {
       const response = await apiClient.get("/cameras/");
-      return response.data;
+      return response.data.data || [];
     } catch (error) {
       console.error("Error fetching cameras:", error);
       toast({
@@ -35,20 +35,9 @@ export const camerasService = {
   addCamera: async (cameraData: AddCameraData): Promise<Camera> => {
     try {
       const response = await apiClient.post("/cameras/", cameraData);
-
-      toast({
-        title: "Camera Added",
-        description: `${cameraData.name} has been added successfully.`,
-      });
-
-      return response.data;
+      return response.data.data;
     } catch (error) {
-      console.error("Error adding camera:", error);
-      toast({
-        title: "Error",
-        description: "Could not add camera",
-        variant: "destructive",
-      });
+      console.log("Error adding camera:", error);
       throw error;
     }
   },

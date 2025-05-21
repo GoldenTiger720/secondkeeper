@@ -52,22 +52,19 @@ const cameras = [
   {
     id: "1",
     name: "Living Room",
-    ipAddress: "192.168.1.100",
-    url: "rtsp://user:pass@192.168.1.100:554/stream1",
+    stream_url: "rtsp://user:pass@192.168.1.100:554/stream1",
     isConnected: true,
   },
   {
     id: "2",
     name: "Kitchen",
-    ipAddress: "192.168.1.101",
-    url: "rtsp://user:pass@192.168.1.101:554/stream1",
+    stream_url: "rtsp://user:pass@192.168.1.101:554/stream1",
     isConnected: true,
   },
   {
     id: "3",
     name: "Front Door",
-    ipAddress: "192.168.1.102",
-    url: "rtsp://user:pass@192.168.1.102:554/stream1",
+    stream_url: "rtsp://user:pass@192.168.1.102:554/stream1",
     isConnected: false,
   },
 ];

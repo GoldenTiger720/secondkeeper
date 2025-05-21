@@ -4,10 +4,8 @@ import { toast } from "@/hooks/use-toast";
 export interface Camera {
   id: string;
   name: string;
-  ipAddress: string;
-  url: string;
-  location?: string;
-  isConnected: boolean;
+  stream_url: string;
+  status: string;
 }
 
 export interface AddCameraData {
@@ -17,7 +15,7 @@ export interface AddCameraData {
   password: string;
 }
 export const camerasService = {
-  getAllCameras: async (): Promise<Camera[]> => {
+  getAllCameras: async () => {
     try {
       const response = await apiClient.get("/cameras/");
       return response.data.data || [];

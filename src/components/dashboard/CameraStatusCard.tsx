@@ -12,16 +12,14 @@ import {
 export interface CameraStatusProps {
   id: string;
   name: string;
-  ipAddress: string;
-  url: string;
+  stream_url: string;
   isConnected: boolean;
 }
 
 export function CameraStatusCard({
   id,
   name,
-  ipAddress,
-  url,
+  stream_url,
   isConnected,
 }: CameraStatusProps) {
   return (
@@ -45,13 +43,11 @@ export function CameraStatusCard({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="grid grid-cols-3 gap-1 text-sm">
-            <div className="text-muted-foreground">IP Address:</div>
-            <div className="col-span-2 font-mono text-xs">{ipAddress}</div>
-          </div>
-          <div className="grid grid-cols-3 gap-1 text-sm">
-            <div className="text-muted-foreground">Stream URL:</div>
-            <div className="col-span-2 font-mono text-xs truncate" title={url}>
-              {url}
+            <div
+              className="col-span-2 font-mono text-xs truncate"
+              title={stream_url}
+            >
+              {stream_url}
             </div>
           </div>
         </div>

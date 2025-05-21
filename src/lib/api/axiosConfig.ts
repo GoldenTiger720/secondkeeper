@@ -23,12 +23,32 @@ apiClient.interceptors.request.use(
 // Add a response interceptor to handle common errors
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    const { response } = error;
+  async (error) => {
+    const originalRequest = error.config;
     // Handle authentication errors
-    if (response && response.status === 401) {
-      localStorage.removeItem("secondkeeper_token");
-      // Redirect to login page in production
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+      try {
+        const refreshToken = localStorage.getItem("secondkeeper_token");
+        const response = await apiClient.post("/auth/token/refresh/", {
+          refresh_token: refreshToken,
+        });
+        const { access } = response.data.tokens;
+        localStorage.setItem("secondkeeper_access_token", access);
+        originalRequest.headers.Authorization = `Bearer ${access}`;
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        console.error("Error refreshing token:", error);
+        localStorage.removeItem("secondkeeper_token");
+        localStorage.removeItem("secondkeeper_access_token");
+        localStorage.removeItem("safeguard_user");
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
     }
     return Promise.reject(error);
   }

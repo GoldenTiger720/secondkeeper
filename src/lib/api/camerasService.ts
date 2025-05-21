@@ -16,7 +16,6 @@ export interface AddCameraData {
   username: string;
   password: string;
 }
-
 export const camerasService = {
   getAllCameras: async (): Promise<Camera[]> => {
     try {

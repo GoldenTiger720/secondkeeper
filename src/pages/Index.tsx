@@ -97,7 +97,6 @@ const Index = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4">
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          {/* <AddCameraDialog /> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -126,38 +125,16 @@ const Index = () => {
             icon={<ShieldAlert className="h-4 w-4" />}
           />
         </div>
-
-        <Tabs defaultValue="alerts" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="alerts">Recent Alerts</TabsTrigger>
-            <TabsTrigger value="cameras">Cameras</TabsTrigger>
-          </TabsList>
-          <TabsContent value="alerts" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {alerts.map((alert) => (
-                <AlertCard key={alert.id} {...alert} />
-              ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="cameras">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {cameras.map((camera) => (
-                <CameraStatusCard key={camera.id} {...camera} />
-              ))}
-              <div className="flex items-center justify-center h-full min-h-[200px] border-2 border-dashed rounded-lg border-muted p-4">
-                <div className="flex flex-col items-center justify-center text-center space-y-2">
-                  <div className="bg-primary/10 p-3 rounded-full">
-                    <Camera className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-medium">Add Camera</h3>
-                  <p className="text-sm text-muted-foreground max-w-[150px]">
-                    Add a new camera to monitor another area
-                  </p>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+        <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Recent Alerts
+          </h1>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {alerts.map((alert) => (
+            <AlertCard key={alert.id} {...alert} />
+          ))}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
@@ -204,9 +181,9 @@ const Index = () => {
               </CardContent>
             </Card>
           </div>
-          {/* <div>
+          <div>
             <AuthorizedFacesCard />
-          </div> */}
+          </div>
         </div>
       </div>
     </DashboardLayout>

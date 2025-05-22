@@ -192,12 +192,6 @@ export function EditCameraDialog({
           </DialogHeader>
 
           <Tabs defaultValue="basic" className="mt-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basic">Basic</TabsTrigger>
-              <TabsTrigger value="detection">Detection</TabsTrigger>
-              <TabsTrigger value="performance">Performance</TabsTrigger>
-            </TabsList>
-
             <TabsContent value="basic" className="space-y-4 mt-4">
               <div className="grid gap-4">
                 <div className="grid gap-2">

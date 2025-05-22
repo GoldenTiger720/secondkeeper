@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { CameraStatusCard } from "@/components/dashboard/CameraStatusCard";
 import { AddCameraDialog } from "@/components/dashboard/AddCameraDialog";
@@ -28,7 +27,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
 const Cameras = () => {
@@ -36,11 +41,11 @@ const Cameras = () => {
   const [cameras, setCameras] = useState<CameraType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState("5");
-  
+
   // Dialog states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -97,22 +102,22 @@ const Cameras = () => {
   const handleCameraAdded = useCallback(() => {
     loadCameras();
   }, [loadCameras]);
-  
+
   const handleEditCamera = (camera: CameraType) => {
     setSelectedCamera(camera);
     setEditDialogOpen(true);
   };
-  
+
   const handleDeleteCamera = (camera: CameraType) => {
     setSelectedCamera(camera);
     setDeleteDialogOpen(true);
   };
-  
+
   const handlePageSizeChange = (value: string) => {
     setPageSize(value);
     setCurrentPage(1); // Reset to first page when changing page size
   };
-  
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -133,7 +138,7 @@ const Cameras = () => {
   const startIndex = (currentPage - 1) * parseInt(pageSize);
   const endIndex = Math.min(startIndex + parseInt(pageSize), totalItems);
   const paginatedCameras = filteredCameras.slice(startIndex, endIndex);
-  
+
   // Generate pagination items
   const paginationItems = [];
   const showEllipsisStart = currentPage > 3;
@@ -200,46 +205,58 @@ const Cameras = () => {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Camera className="h-5 w-5 text-blue-600" />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/10">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="p-2 sm:p-3 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                    <Camera className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                     Total Cameras
                   </p>
-                  <p className="text-2xl font-bold">{totalCameras}</p>
+                </div>
+                <div>
+                  <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-400 mt-1">
+                    {totalCameras}
+                  </span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="h-5 w-5 rounded-full bg-green-500" />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/10">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="p-2 sm:p-3 rounded-full bg-green-100 dark:bg-green-900/30">
+                    <div className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
+                  </div>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                     Online
                   </p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {onlineCameras}
-                  </p>
                 </div>
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400 mt-1">
+                  {onlineCameras}
+                </span>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="h-5 w-5 rounded-full bg-red-500" />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/20 dark:to-red-900/10 sm:col-span-2 lg:col-span-1">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="p-2 sm:p-3 rounded-full bg-red-100 dark:bg-red-900/30">
+                    <div className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 rounded-full bg-red-500 dark:bg-red-400" />
+                  </div>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                     Offline
                   </p>
-                  <p className="text-2xl font-bold text-red-600">
+                </div>
+                <div>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600 dark:text-red-400 mt-1">
                     {totalCameras - onlineCameras}
                   </p>
                 </div>
@@ -281,8 +298,12 @@ const Cameras = () => {
                     <TableRow>
                       <TableHead className="w-12 text-center">#</TableHead>
                       <TableHead>Name</TableHead>
-                      <TableHead className="hidden md:table-cell">Status</TableHead>
-                      <TableHead className="hidden lg:table-cell">URL</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        URL
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Status
+                      </TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -293,35 +314,52 @@ const Cameras = () => {
                           <TableCell className="text-center font-medium">
                             {startIndex + index + 1}
                           </TableCell>
-                          <TableCell>{camera.name}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Camera className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="text-xs sm:text-sm font-medium truncate">
+                                {camera.name}
+                              </span>
+                            </div>
+                          </TableCell>
+
+                          <TableCell
+                            className="hidden lg:table-cell font-mono text-xs truncate max-w-[300px]"
+                            title={camera.stream_url}
+                          >
+                            {camera.stream_url}
+                          </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {camera.status === "online" ? (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              <Badge
+                                variant="outline"
+                                className="bg-green-50 text-green-700 border-green-200"
+                              >
                                 <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
                                 Online
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                              <Badge
+                                variant="outline"
+                                className="bg-red-50 text-red-700 border-red-200"
+                              >
                                 <div className="w-2 h-2 rounded-full bg-red-500 mr-1"></div>
                                 Offline
                               </Badge>
                             )}
                           </TableCell>
-                          <TableCell className="hidden lg:table-cell font-mono text-xs truncate max-w-[300px]" title={camera.stream_url}>
-                            {camera.stream_url}
-                          </TableCell>
                           <TableCell className="text-right space-x-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 inline-flex text-gray-500 hover:text-gray-700"
                               onClick={() => handleEditCamera(camera)}
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 inline-flex text-gray-500 hover:text-red-600"
                               onClick={() => handleDeleteCamera(camera)}
                             >
@@ -336,9 +374,12 @@ const Cameras = () => {
                         <TableCell colSpan={5} className="h-24 text-center">
                           <div className="flex flex-col items-center justify-center py-4">
                             <Search className="h-8 w-8 text-muted-foreground mb-2" />
-                            <h3 className="font-medium text-muted-foreground">No cameras found</h3>
+                            <h3 className="font-medium text-muted-foreground">
+                              No cameras found
+                            </h3>
                             <p className="text-sm text-muted-foreground max-w-sm mt-1">
-                              No cameras match your search criteria. Try adjusting your search terms.
+                              No cameras match your search criteria. Try
+                              adjusting your search terms.
                             </p>
                             <Button
                               variant="outline"
@@ -356,10 +397,13 @@ const Cameras = () => {
                         <TableCell colSpan={5} className="h-24 text-center">
                           <div className="flex flex-col items-center justify-center py-4">
                             <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-                            <h3 className="font-medium text-muted-foreground">No cameras configured</h3>
+                            <h3 className="font-medium text-muted-foreground">
+                              No cameras configured
+                            </h3>
                             <p className="text-sm text-muted-foreground max-w-sm mt-1 mb-4">
-                              Add your first camera to start monitoring. You can connect
-                              IP cameras, RTSP streams, or local devices.
+                              Add your first camera to start monitoring. You can
+                              connect IP cameras, RTSP streams, or local
+                              devices.
                             </p>
                             <AddCameraDialog
                               onCameraAdded={handleCameraAdded}
@@ -378,7 +422,7 @@ const Cameras = () => {
                 </Table>
               </div>
             )}
-            
+
             {/* Pagination */}
             {filteredCameras.length > 0 && !isLoading && (
               <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0 mt-4">
@@ -386,7 +430,7 @@ const Cameras = () => {
                   Showing {startIndex + 1}-{endIndex} of {totalItems} cameras
                 </div>
                 <div className="flex items-center space-x-6">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex  items-center gap-5">
                     <p className="text-sm font-medium">Rows per page</p>
                     <Select
                       value={pageSize}
@@ -397,62 +441,124 @@ const Cameras = () => {
                       </SelectTrigger>
                       <SelectContent side="top">
                         {["5", "10", "20", "30", "50"].map((size) => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                          <SelectItem key={size} value={size}>
+                            {size}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  <Pagination>
-                    <PaginationContent>
+
+                  {/* Mobile Pagination - Simple Previous/Next */}
+                  <div className="block sm:hidden">
+                    <div className="flex items-center justify-between">
                       <PaginationItem>
-                        <PaginationPrevious 
-                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        <PaginationPrevious
+                          onClick={() =>
+                            handlePageChange(Math.max(1, currentPage - 1))
+                          }
+                          className={
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
                         />
                       </PaginationItem>
-                      
-                      {showEllipsisStart && (
-                        <>
-                          <PaginationItem>
-                            <PaginationLink onClick={() => handlePageChange(1)}>1</PaginationLink>
-                          </PaginationItem>
-                          <PaginationItem>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        </>
-                      )}
-                      
-                      {paginationItems}
-                      
-                      {showEllipsisEnd && (
-                        <>
-                          <PaginationItem>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                          <PaginationItem>
-                            <PaginationLink onClick={() => handlePageChange(pageCount)}>
-                              {pageCount}
-                            </PaginationLink>
-                          </PaginationItem>
-                        </>
-                      )}
-                      
+
+                      <span className="text-sm text-muted-foreground">
+                        Page {currentPage} of {pageCount}
+                      </span>
+
                       <PaginationItem>
-                        <PaginationNext 
-                          onClick={() => handlePageChange(Math.min(pageCount, currentPage + 1))}
-                          className={currentPage === pageCount ? "pointer-events-none opacity-50" : ""}
+                        <PaginationNext
+                          onClick={() =>
+                            handlePageChange(
+                              Math.min(pageCount, currentPage + 1)
+                            )
+                          }
+                          className={
+                            currentPage === pageCount
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
                         />
                       </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                    </div>
+                  </div>
+
+                  {/* Desktop Pagination - Full Navigation */}
+                  <div className="hidden sm:block">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() =>
+                              handlePageChange(Math.max(1, currentPage - 1))
+                            }
+                            className={
+                              currentPage === 1
+                                ? "pointer-events-none opacity-50"
+                                : ""
+                            }
+                          />
+                        </PaginationItem>
+
+                        {showEllipsisStart && (
+                          <>
+                            <PaginationItem>
+                              <PaginationLink
+                                onClick={() => handlePageChange(1)}
+                              >
+                                1
+                              </PaginationLink>
+                            </PaginationItem>
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          </>
+                        )}
+
+                        {paginationItems}
+
+                        {showEllipsisEnd && (
+                          <>
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                            <PaginationItem>
+                              <PaginationLink
+                                onClick={() => handlePageChange(pageCount)}
+                              >
+                                {pageCount}
+                              </PaginationLink>
+                            </PaginationItem>
+                          </>
+                        )}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              handlePageChange(
+                                Math.min(pageCount, currentPage + 1)
+                              )
+                            }
+                            className={
+                              currentPage === pageCount
+                                ? "pointer-events-none opacity-50"
+                                : ""
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Edit Camera Dialog */}
       {selectedCamera && (
         <EditCameraDialog
@@ -464,7 +570,7 @@ const Cameras = () => {
           currentStreamUrl={selectedCamera.stream_url}
         />
       )}
-      
+
       {/* Delete Camera Dialog */}
       {selectedCamera && (
         <DeleteCameraDialog

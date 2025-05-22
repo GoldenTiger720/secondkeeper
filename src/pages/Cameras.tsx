@@ -1,19 +1,50 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { CameraStatusCard } from "@/components/dashboard/CameraStatusCard";
 import { AddCameraDialog } from "@/components/dashboard/AddCameraDialog";
+import { EditCameraDialog } from "@/components/dashboard/EditCameraDialog";
+import { DeleteCameraDialog } from "@/components/dashboard/DeleteCameraDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Search, RefreshCw, Plus } from "lucide-react";
+import { Camera, Search, RefreshCw, Plus, Pencil, Trash } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useCallback } from "react";
-import { camerasService } from "@/lib/api/camerasService";
+import { camerasService, Camera as CameraType } from "@/lib/api/camerasService";
 import { toast } from "@/hooks/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 const Cameras = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [cameras, setCameras] = useState([]);
+  const [cameras, setCameras] = useState<CameraType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState("5");
+  
+  // Dialog states
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
 
   const loadCameras = useCallback(async (showToast = false) => {
     try {
@@ -55,15 +86,36 @@ const Cameras = () => {
 
   const handleCameraUpdated = useCallback(() => {
     loadCameras();
+    setEditDialogOpen(false);
   }, [loadCameras]);
 
   const handleCameraDeleted = useCallback(() => {
     loadCameras();
+    setDeleteDialogOpen(false);
   }, [loadCameras]);
 
   const handleCameraAdded = useCallback(() => {
     loadCameras();
   }, [loadCameras]);
+  
+  const handleEditCamera = (camera: CameraType) => {
+    setSelectedCamera(camera);
+    setEditDialogOpen(true);
+  };
+  
+  const handleDeleteCamera = (camera: CameraType) => {
+    setSelectedCamera(camera);
+    setDeleteDialogOpen(true);
+  };
+  
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(value);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   useEffect(() => {
     loadCameras();
@@ -74,6 +126,46 @@ const Cameras = () => {
       camera.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       camera.stream_url.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Pagination calculation
+  const totalItems = filteredCameras.length;
+  const pageCount = Math.ceil(totalItems / parseInt(pageSize));
+  const startIndex = (currentPage - 1) * parseInt(pageSize);
+  const endIndex = Math.min(startIndex + parseInt(pageSize), totalItems);
+  const paginatedCameras = filteredCameras.slice(startIndex, endIndex);
+  
+  // Generate pagination items
+  const paginationItems = [];
+  const showEllipsisStart = currentPage > 3;
+  const showEllipsisEnd = currentPage < pageCount - 2;
+  const maxPages = 5;
+
+  let startPage = 1;
+  let endPage = pageCount;
+
+  if (pageCount > maxPages) {
+    if (currentPage <= 3) {
+      endPage = maxPages;
+    } else if (currentPage >= pageCount - 2) {
+      startPage = pageCount - maxPages + 1;
+    } else {
+      startPage = currentPage - 2;
+      endPage = currentPage + 2;
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    paginationItems.push(
+      <PaginationItem key={i}>
+        <PaginationLink
+          onClick={() => handlePageChange(i)}
+          isActive={currentPage === i}
+        >
+          {i}
+        </PaginationLink>
+      </PaginationItem>
+    );
+  }
 
   const onlineCameras = cameras.filter(
     (camera) => camera.status === "online"
@@ -182,92 +274,207 @@ const Cameras = () => {
                 </div>
               </div>
             ) : (
-              /* Camera Grid */
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredCameras.length > 0 ? (
-                  filteredCameras.map((camera) => (
-                    <CameraStatusCard
-                      key={camera.id}
-                      id={camera.id.toString()}
-                      name={camera.name}
-                      stream_url={camera.stream_url}
-                      isConnected={camera.status === "online"}
-                      onCameraUpdated={handleCameraUpdated}
-                      onCameraDeleted={handleCameraDeleted}
-                    />
-                  ))
-                ) : searchQuery ? (
-                  /* No Search Results */
-                  <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                    <Search className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                      No cameras found
-                    </h3>
-                    <p className="text-sm text-muted-foreground max-w-sm">
-                      No cameras match your search criteria. Try adjusting your
-                      search terms.
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => setSearchQuery("")}
+              /* Camera Table */
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12 text-center">#</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="hidden md:table-cell">Status</TableHead>
+                      <TableHead className="hidden lg:table-cell">URL</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedCameras.length > 0 ? (
+                      paginatedCameras.map((camera, index) => (
+                        <TableRow key={camera.id}>
+                          <TableCell className="text-center font-medium">
+                            {startIndex + index + 1}
+                          </TableCell>
+                          <TableCell>{camera.name}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {camera.status === "online" ? (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                                Online
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                <div className="w-2 h-2 rounded-full bg-red-500 mr-1"></div>
+                                Offline
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell font-mono text-xs truncate max-w-[300px]" title={camera.stream_url}>
+                            {camera.stream_url}
+                          </TableCell>
+                          <TableCell className="text-right space-x-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 inline-flex text-gray-500 hover:text-gray-700"
+                              onClick={() => handleEditCamera(camera)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 inline-flex text-gray-500 hover:text-red-600"
+                              onClick={() => handleDeleteCamera(camera)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : searchQuery ? (
+                      /* No Search Results */
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                          <div className="flex flex-col items-center justify-center py-4">
+                            <Search className="h-8 w-8 text-muted-foreground mb-2" />
+                            <h3 className="font-medium text-muted-foreground">No cameras found</h3>
+                            <p className="text-sm text-muted-foreground max-w-sm mt-1">
+                              No cameras match your search criteria. Try adjusting your search terms.
+                            </p>
+                            <Button
+                              variant="outline"
+                              className="mt-4"
+                              onClick={() => setSearchQuery("")}
+                            >
+                              Clear Search
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      /* No Cameras */
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                          <div className="flex flex-col items-center justify-center py-4">
+                            <Camera className="h-8 w-8 text-muted-foreground mb-2" />
+                            <h3 className="font-medium text-muted-foreground">No cameras configured</h3>
+                            <p className="text-sm text-muted-foreground max-w-sm mt-1 mb-4">
+                              Add your first camera to start monitoring. You can connect
+                              IP cameras, RTSP streams, or local devices.
+                            </p>
+                            <AddCameraDialog
+                              onCameraAdded={handleCameraAdded}
+                              trigger={
+                                <Button>
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add Your First Camera
+                                </Button>
+                              }
+                            />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+            
+            {/* Pagination */}
+            {filteredCameras.length > 0 && !isLoading && (
+              <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0 mt-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1}-{endIndex} of {totalItems} cameras
+                </div>
+                <div className="flex items-center space-x-6">
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium">Rows per page</p>
+                    <Select
+                      value={pageSize}
+                      onValueChange={handlePageSizeChange}
                     >
-                      Clear Search
-                    </Button>
+                      <SelectTrigger className="h-8 w-[70px]">
+                        <SelectValue placeholder={pageSize} />
+                      </SelectTrigger>
+                      <SelectContent side="top">
+                        {["5", "10", "20", "30", "50"].map((size) => (
+                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                ) : (
-                  /* No Cameras */
-                  <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                    <Camera className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                      No cameras configured
-                    </h3>
-                    <p className="text-sm text-muted-foreground max-w-sm mb-4">
-                      Add your first camera to start monitoring. You can connect
-                      IP cameras, RTSP streams, or local devices.
-                    </p>
-                    <AddCameraDialog
-                      onCameraAdded={handleCameraAdded}
-                      trigger={
-                        <Button>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Your First Camera
-                        </Button>
-                      }
-                    />
-                  </div>
-                )}
-
-                {/* Add Camera Placeholder (only show when there are existing cameras) */}
-                {filteredCameras.length > 0 && !searchQuery && (
-                  <div className="flex items-center justify-center h-full min-h-[200px] border-2 border-dashed rounded-lg border-muted p-4 hover:border-muted-foreground/50 transition-colors">
-                    <div className="flex flex-col items-center justify-center text-center space-y-3">
-                      <div className="bg-primary/10 p-3 rounded-full">
-                        <Plus className="h-6 w-6 text-primary" />
-                      </div>
-                      <h3 className="text-lg font-medium">
-                        Add Another Camera
-                      </h3>
-                      <p className="text-sm text-muted-foreground max-w-[150px]">
-                        Connect more cameras to expand your monitoring coverage
-                      </p>
-                      <AddCameraDialog
-                        onCameraAdded={handleCameraAdded}
-                        trigger={
-                          <Button variant="outline" size="sm">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Camera
-                          </Button>
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
+                  
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                      
+                      {showEllipsisStart && (
+                        <>
+                          <PaginationItem>
+                            <PaginationLink onClick={() => handlePageChange(1)}>1</PaginationLink>
+                          </PaginationItem>
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        </>
+                      )}
+                      
+                      {paginationItems}
+                      
+                      {showEllipsisEnd && (
+                        <>
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                          <PaginationItem>
+                            <PaginationLink onClick={() => handlePageChange(pageCount)}>
+                              {pageCount}
+                            </PaginationLink>
+                          </PaginationItem>
+                        </>
+                      )}
+                      
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => handlePageChange(Math.min(pageCount, currentPage + 1))}
+                          className={currentPage === pageCount ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+      
+      {/* Edit Camera Dialog */}
+      {selectedCamera && (
+        <EditCameraDialog
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          onSuccess={handleCameraUpdated}
+          cameraId={selectedCamera.id}
+          cameraName={selectedCamera.name}
+          currentStreamUrl={selectedCamera.stream_url}
+        />
+      )}
+      
+      {/* Delete Camera Dialog */}
+      {selectedCamera && (
+        <DeleteCameraDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          onSuccess={handleCameraDeleted}
+          cameraId={selectedCamera.id}
+          cameraName={selectedCamera.name}
+        />
+      )}
     </DashboardLayout>
   );
 };

@@ -26,6 +26,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     // Handle authentication errors
+    console.log(error.response);
     if (
       error.response &&
       error.response.status === 401 &&

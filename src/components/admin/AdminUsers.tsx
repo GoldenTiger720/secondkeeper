@@ -1,76 +1,122 @@
-
-import { useState } from "react";
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
+import { useState, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  Search, Plus, Edit, LogIn, Blocks, Bell, Camera
-} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Search, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import axios from "axios";
+import apiClient from "@/lib/api/axiosConfig";
+import { toast } from "@/hooks/use-toast";
 
-// Mock data for users
-const mockUsers = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Main St, Anytown, USA",
-    status: "active",
-    cameras: 3,
-    alerts: 5,
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    phone: "+1 (555) 987-6543",
-    address: "456 Oak Ave, Somewhere, USA",
-    status: "active",
-    cameras: 2,
-    alerts: 0,
-  },
-  {
-    id: "3",
-    name: "Mike Johnson",
-    email: "mike@example.com",
-    phone: "+1 (555) 567-8901",
-    address: "789 Pine Rd, Nowhere, USA",
-    status: "blocked",
-    cameras: 1,
-    alerts: 12,
-  },
-  {
-    id: "4",
-    name: "Sarah Williams",
-    email: "sarah@example.com",
-    phone: "+1 (555) 234-5678",
-    address: "321 Elm St, Everywhere, USA",
-    status: "active",
-    cameras: 4,
-    alerts: 3,
-  },
-];
+// User type definition
+interface User {
+  id: string;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  is_active: string;
+  cameras: number;
+  alerts: number;
+}
 
 const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedActions, setSelectedActions] = useState<
+    Record<string, string>
+  >({});
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.phone.includes(searchQuery)
+  // Action options for dropdown
+  const actionOptions = ["Edit", "Block", "Unblock", "Delete"];
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiClient.get("/admin/users");
+      if (response.data) {
+        setUsers(response.data.data.results);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load users. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle user actions
+  const handleUserAction = (userId: string, action: string) => {
+    console.log(`Action ${action} triggered for user ${userId}`);
+
+    // Update selected action for this user
+    setSelectedActions((prev) => ({
+      ...prev,
+      [userId]: action,
+    }));
+
+    // Implement action logic
+    switch (action) {
+      case "Edit":
+        // Open edit dialog
+        break;
+      case "Block":
+        // Implement block logic
+        break;
+      case "Unblock":
+        // Implement unblock logic
+        break;
+      case "Delete":
+        // Implement delete confirmation
+        break;
+      default:
+        break;
+    }
+  };
+
+  const filteredUsers = users.filter(
+    (user) =>
+      user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.phone_number.includes(searchQuery)
   );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-xl md:text-2xl font-bold tracking-tight">User Management</h2>
+        <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+          User Management
+        </h2>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
@@ -120,109 +166,134 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden md:block overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-center">Cameras</TableHead>
-              <TableHead className="text-center">Alerts</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.phone}</TableCell>
-                <TableCell>
-                  <Badge variant={user.status === "active" ? "outline" : "destructive"}>
-                    {user.status === "active" ? "Active" : "Blocked"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center">{user.cameras}</TableCell>
-                <TableCell className="text-center">{user.alerts}</TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button variant="outline" size="icon" title="Edit User">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" title="Manage Cameras">
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" title="Notification Settings">
-                    <Bell className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" title="Login as User">
-                    <LogIn className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" title="Block User">
-                    <Blocks className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-10">
+          <div className="animate-spin h-8 w-8 border-2 border-primary rounded-full border-t-transparent"></div>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Cameras</TableHead>
+                  <TableHead className="text-center">Alerts</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.full_name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.phone_number}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={user.is_active ? "success" : "destructive"}
+                      >
+                        {user.is_active ? "Active" : "Blocked"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {user.cameras}
+                    </TableCell>
+                    <TableCell className="text-center">{user.alerts}</TableCell>
+                    <TableCell className="text-right">
+                      <Select
+                        value={selectedActions[user.id] || ""}
+                        onValueChange={(value) =>
+                          handleUserAction(user.id, value)
+                        }
+                      >
+                        <SelectTrigger className="ml-auto w-[120px]">
+                          <SelectValue placeholder="Actions" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {actionOptions.map((action) => (
+                            <SelectItem
+                              key={action}
+                              value={action}
+                              className={
+                                action === "Delete" ? "text-red-600" : ""
+                              }
+                            >
+                              {action}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-      {/* Mobile Card View */}
-      <div className="md:hidden space-y-4">
-        {filteredUsers.map((user) => (
-          <Card key={user.id}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium">{user.name}</CardTitle>
-                <Badge variant={user.status === "active" ? "outline" : "destructive"}>
-                  {user.status === "active" ? "Active" : "Blocked"}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-[80px_1fr] gap-1 text-sm">
-                <div className="text-muted-foreground">Email:</div>
-                <div className="truncate">{user.email}</div>
-                
-                <div className="text-muted-foreground">Phone:</div>
-                <div>{user.phone}</div>
-                
-                <div className="text-muted-foreground">Cameras:</div>
-                <div>{user.cameras}</div>
-                
-                <div className="text-muted-foreground">Alerts:</div>
-                <div>{user.alerts}</div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Button variant="outline" size="sm" className="flex-1 min-w-0">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 min-w-0">
-                  <Camera className="h-4 w-4 mr-1" />
-                  Cameras
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 min-w-0">
-                  <Bell className="h-4 w-4 mr-1" />
-                  Alerts
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 min-w-0">
-                  <LogIn className="h-4 w-4 mr-1" />
-                  Login
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 min-w-0">
-                  <Blocks className="h-4 w-4 mr-1" />
-                  {user.status === "active" ? "Block" : "Unblock"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {filteredUsers.map((user) => (
+              <Card key={user.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-medium">
+                      {user.full_name}
+                    </CardTitle>
+                    <Badge variant={user.is_active ? "success" : "destructive"}>
+                      {user.is_active ? "Active" : "Blocked"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-[80px_1fr] gap-1 text-sm">
+                    <div className="text-muted-foreground">Email:</div>
+                    <div className="truncate">{user.email}</div>
+
+                    <div className="text-muted-foreground">Phone:</div>
+                    <div>{user.phone_number}</div>
+
+                    <div className="text-muted-foreground">Cameras:</div>
+                    <div>{user.cameras}</div>
+
+                    <div className="text-muted-foreground">Alerts:</div>
+                    <div>{user.alerts}</div>
+                  </div>
+
+                  <div className="pt-2">
+                    <Select
+                      value={selectedActions[user.id] || ""}
+                      onValueChange={(value) =>
+                        handleUserAction(user.id, value)
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Actions" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {actionOptions.map((action) => (
+                          <SelectItem
+                            key={action}
+                            value={action}
+                            className={
+                              action === "Delete" ? "text-red-600" : ""
+                            }
+                          >
+                            {action}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

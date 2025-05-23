@@ -86,6 +86,7 @@ export function RealTimeStreamViewer({
   const maxReconnectAttempts = 5;
   const { toast } = useToast();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const drawFrame = useCallback((frameData: string, metadata?: any) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -109,7 +110,8 @@ export function RealTimeStreamViewer({
   const drawOverlay = (
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
-    metadata
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    metadata: any
   ) => {
     ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
     ctx.fillRect(10, 10, 300, 80);
@@ -280,7 +282,8 @@ export function RealTimeStreamViewer({
       } else {
         setError(data.errors?.join(", ") || "Failed to start stream.");
       }
-    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       console.error("Stream start error:", err);
       setError(err.response?.data?.message || "Server connection failed.");
     } finally {
@@ -358,9 +361,12 @@ export function RealTimeStreamViewer({
 
   useEffect(() => {
     startStream();
+    console.log(cameraId);
+
     return () => {
       stopStream();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraId]);
 
   return (

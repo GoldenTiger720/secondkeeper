@@ -1,11 +1,23 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Edit, Trash, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  Edit,
+  Trash,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -88,14 +100,14 @@ const AdminCameras = () => {
   const [pageSize, setPageSize] = useState("5");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredCameras = cameras.filter(camera => {
-    const matchesSearch = 
+  const filteredCameras = cameras.filter((camera) => {
+    const matchesSearch =
       camera.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       camera.ip.includes(searchQuery) ||
       camera.url.includes(searchQuery);
-    
+
     const matchesUser = selectedUser ? camera.userId === selectedUser : true;
-    
+
     return matchesSearch && matchesUser;
   });
 
@@ -150,8 +162,10 @@ const AdminCameras = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl md:text-2xl font-bold tracking-tight">Camera Management</h2>
-      
+      <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+        Camera Management
+      </h2>
+
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -162,22 +176,21 @@ const AdminCameras = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Select 
-          value={selectedUser} 
-          onValueChange={setSelectedUser}
-        >
+        <Select value={selectedUser} onValueChange={setSelectedUser}>
           <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder="Filter by user" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Users</SelectItem>
-            {mockUsers.map(user => (
-              <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+            <SelectItem value="all">All Users</SelectItem>
+            {mockUsers.map((user) => (
+              <SelectItem key={user.id} value={user.id}>
+                {user.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle>Camera List</CardTitle>
@@ -188,8 +201,12 @@ const AdminCameras = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[180px]">Name</TableHead>
-                  <TableHead className="hidden md:table-cell">IP Address</TableHead>
-                  <TableHead className="hidden lg:table-cell">Stream URL</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    IP Address
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell">
+                    Stream URL
+                  </TableHead>
                   <TableHead className="hidden sm:table-cell">User</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -199,32 +216,57 @@ const AdminCameras = () => {
                 {paginatedCameras.map((camera) => (
                   <TableRow key={camera.id}>
                     <TableCell className="font-medium">{camera.name}</TableCell>
-                    <TableCell className="hidden md:table-cell font-mono text-xs">{camera.ip}</TableCell>
-                    <TableCell className="hidden lg:table-cell font-mono text-xs truncate max-w-[300px]" title={camera.url}>
+                    <TableCell className="hidden md:table-cell font-mono text-xs">
+                      {camera.ip}
+                    </TableCell>
+                    <TableCell
+                      className="hidden lg:table-cell font-mono text-xs truncate max-w-[300px]"
+                      title={camera.url}
+                    >
                       {camera.url}
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{camera.userName}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {camera.userName}
+                    </TableCell>
                     <TableCell>
                       {camera.status === "online" ? (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <Badge
+                          variant="outline"
+                          className="bg-green-50 text-green-700 border-green-200"
+                        >
                           <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
                           Online
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                        <Badge
+                          variant="outline"
+                          className="bg-red-50 text-red-700 border-red-200"
+                        >
                           <div className="w-2 h-2 rounded-full bg-red-500 mr-1"></div>
                           Offline
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="outline" size="icon" className="h-8 w-8 inline-flex">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 inline-flex"
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="icon" className="h-8 w-8 inline-flex">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 inline-flex"
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="icon" className="h-8 w-8 inline-flex hover:bg-red-50 hover:text-red-600">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 inline-flex hover:bg-red-50 hover:text-red-600"
+                      >
                         <Trash className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -240,7 +282,7 @@ const AdminCameras = () => {
               </TableBody>
             </Table>
           </div>
-          
+
           {filteredCameras.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0 mt-4">
               <div className="text-sm text-muted-foreground">
@@ -249,60 +291,75 @@ const AdminCameras = () => {
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-2">
                   <p className="text-sm font-medium">Rows per page</p>
-                  <Select
-                    value={pageSize}
-                    onValueChange={handlePageSizeChange}
-                  >
+                  <Select value={pageSize} onValueChange={handlePageSizeChange}>
                     <SelectTrigger className="h-8 w-[70px]">
                       <SelectValue placeholder={pageSize} />
                     </SelectTrigger>
                     <SelectContent side="top">
                       {["5", "10", "20", "30", "50"].map((size) => (
-                        <SelectItem key={size} value={size}>{size}</SelectItem>
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                      <PaginationPrevious
+                        onClick={() =>
+                          handlePageChange(Math.max(1, currentPage - 1))
+                        }
+                        className={
+                          currentPage === 1
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                        }
                       />
                     </PaginationItem>
-                    
+
                     {showEllipsisStart && currentPage > 3 && (
                       <>
                         <PaginationItem>
-                          <PaginationLink onClick={() => handlePageChange(1)}>1</PaginationLink>
+                          <PaginationLink onClick={() => handlePageChange(1)}>
+                            1
+                          </PaginationLink>
                         </PaginationItem>
                         <PaginationItem>
                           <PaginationEllipsis />
                         </PaginationItem>
                       </>
                     )}
-                    
+
                     {paginationItems}
-                    
+
                     {showEllipsisEnd && currentPage < pageCount - 2 && (
                       <>
                         <PaginationItem>
                           <PaginationEllipsis />
                         </PaginationItem>
                         <PaginationItem>
-                          <PaginationLink onClick={() => handlePageChange(pageCount)}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(pageCount)}
+                          >
                             {pageCount}
                           </PaginationLink>
                         </PaginationItem>
                       </>
                     )}
-                    
+
                     <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => handlePageChange(Math.min(pageCount, currentPage + 1))}
-                        className={currentPage === pageCount ? "pointer-events-none opacity-50" : ""}
+                      <PaginationNext
+                        onClick={() =>
+                          handlePageChange(Math.min(pageCount, currentPage + 1))
+                        }
+                        className={
+                          currentPage === pageCount
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                        }
                       />
                     </PaginationItem>
                   </PaginationContent>

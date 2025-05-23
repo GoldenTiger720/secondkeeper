@@ -4,23 +4,10 @@ import { toast } from "@/hooks/use-toast";
 export interface Camera {
   id: string;
   name: string;
-  stream_url: string;
   status: string;
+  stream_url: string;
   username?: string;
   password?: string;
-  detection_enabled?: boolean;
-  fire_smoke_detection?: boolean;
-  fall_detection?: boolean;
-  violence_detection?: boolean;
-  choking_detection?: boolean;
-  face_recognition?: boolean;
-  confidence_threshold?: number;
-  iou_threshold?: number;
-  image_size?: number;
-  frame_rate?: number;
-  created_at: string;
-  updated_at: string;
-  last_online?: string;
 }
 
 export interface AddCameraData {
@@ -28,19 +15,6 @@ export interface AddCameraData {
   stream_url: string;
   username?: string;
   password?: string;
-}
-
-export interface UpdateCameraData extends Partial<AddCameraData> {
-  detection_enabled?: boolean;
-  fire_smoke_detection?: boolean;
-  fall_detection?: boolean;
-  violence_detection?: boolean;
-  choking_detection?: boolean;
-  face_recognition?: boolean;
-  confidence_threshold?: number;
-  iou_threshold?: number;
-  image_size?: number;
-  frame_rate?: number;
 }
 
 export interface StreamResponse {
@@ -116,13 +90,10 @@ export const camerasService = {
 
   updateCamera: async (
     cameraId: string,
-    cameraData: UpdateCameraData
+    cameraData: Partial<Camera>
   ): Promise<{ success: boolean; data: Camera; message: string }> => {
     try {
-      const response = await apiClient.patch(
-        `/cameras/${cameraId}/`,
-        cameraData
-      );
+      const response = await apiClient.put(`/cameras/${cameraId}/`, cameraData);
 
       return response.data;
     } catch (error) {
@@ -210,7 +181,11 @@ export const camerasService = {
   // Camera settings
   getCameraSettings: async (
     cameraId: string
-  ): Promise<{ success: boolean; data: any; message: string }> => {
+  ): Promise<{
+    success: boolean;
+    data: Record<string, unknown>;
+    message: string;
+  }> => {
     try {
       const response = await apiClient.get(`/cameras/${cameraId}/settings/`);
       return response.data;
@@ -220,26 +195,26 @@ export const camerasService = {
     }
   },
 
-  updateCameraSettings: async (
-    cameraId: string,
-    settings: Partial<UpdateCameraData>
-  ): Promise<{ success: boolean; data: any; message: string }> => {
-    try {
-      const response = await apiClient.patch(
-        `/cameras/${cameraId}/settings/`,
-        settings
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error updating camera settings:", error);
-      throw error;
-    }
-  },
+  // updateCameraSettings: async (
+  //   cameraId: string,
+  //   settings: Partial<UpdateCameraData>
+  // ): Promise<{ success: boolean; data: any; message: string }> => {
+  //   try {
+  //     const response = await apiClient.patch(
+  //       `/cameras/${cameraId}/settings/`,
+  //       settings
+  //     );
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error("Error updating camera settings:", error);
+  //     throw error;
+  //   }
+  // },
 
   // Status related methods
   getCameraStatuses: async (): Promise<{
     success: boolean;
-    data: any[];
+    data: Camera[];
     message: string;
   }> => {
     try {

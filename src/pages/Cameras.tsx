@@ -431,7 +431,6 @@ const Cameras = () => {
                 </div>
                 <div className="flex items-center space-x-6">
                   <div className="flex  items-center gap-5">
-                    <p className="text-sm font-medium">Rows per page</p>
                     <Select
                       value={pageSize}
                       onValueChange={handlePageSizeChange}

@@ -36,9 +36,10 @@ interface User {
   full_name: string;
   email: string;
   phone_number: string;
-  is_active: string;
-  cameras: number;
-  alerts: number;
+  is_active: boolean;
+  status: "active" | "blocked";
+  cameras_count: number;
+  alerts_count: number;
 }
 
 const AdminUsers = () => {
@@ -59,9 +60,9 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get("/admin/users");
-      if (response.data) {
-        setUsers(response.data.data.results);
+      const response = await apiClient.get("/admin/users/");
+      if (response.data && response.data.success) {
+        setUsers(response.data.data.results || response.data.data);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -76,7 +77,7 @@ const AdminUsers = () => {
   };
 
   // Handle user actions
-  const handleUserAction = (userId: string, action: string) => {
+  const handleUserAction = async (userId: string, action: string) => {
     console.log(`Action ${action} triggered for user ${userId}`);
 
     // Update selected action for this user
@@ -85,23 +86,56 @@ const AdminUsers = () => {
       [userId]: action,
     }));
 
-    // Implement action logic
-    switch (action) {
-      case "Edit":
-        // Open edit dialog
-        break;
-      case "Block":
-        // Implement block logic
-        break;
-      case "Unblock":
-        // Implement unblock logic
-        break;
-      case "Delete":
-        // Implement delete confirmation
-        break;
-      default:
-        break;
+    try {
+      let response;
+
+      switch (action) {
+        case "Edit":
+          // Open edit dialog (implement separately)
+          break;
+
+        case "Block":
+        case "Unblock":
+        case "Delete":
+          response = await apiClient.post(
+            `/admin/users/${userId}/update_status/`,
+            {
+              action: action,
+            }
+          );
+
+          if (response.data && response.data.success) {
+            toast({
+              title: "Success",
+              description: response.data.message,
+            });
+
+            // Update the user in the local state
+            setUsers((prevUsers) =>
+              prevUsers.map((user) =>
+                user.id === userId ? response.data.data : user
+              )
+            );
+          }
+          break;
+
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error(`Error performing ${action}:`, error);
+      toast({
+        title: "Error",
+        description: `Failed to ${action.toLowerCase()} user. Please try again.`,
+        variant: "destructive",
+      });
     }
+
+    // Reset the dropdown
+    setSelectedActions((prev) => ({
+      ...prev,
+      [userId]: "",
+    }));
   };
 
   const filteredUsers = users.filter(
@@ -194,15 +228,19 @@ const AdminUsers = () => {
                     <TableCell>{user.phone_number}</TableCell>
                     <TableCell>
                       <Badge
-                        variant={user.is_active ? "success" : "destructive"}
+                        variant={
+                          user.status === "active" ? "success" : "destructive"
+                        }
                       >
-                        {user.is_active ? "Active" : "Blocked"}
+                        {user.status === "active" ? "Active" : "Blocked"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      {user.cameras}
+                      {user.cameras_count}
                     </TableCell>
-                    <TableCell className="text-center">{user.alerts}</TableCell>
+                    <TableCell className="text-center">
+                      {user.alerts_count}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Select
                         value={selectedActions[user.id] || ""}
@@ -214,17 +252,28 @@ const AdminUsers = () => {
                           <SelectValue placeholder="Actions" />
                         </SelectTrigger>
                         <SelectContent>
-                          {actionOptions.map((action) => (
-                            <SelectItem
-                              key={action}
-                              value={action}
-                              className={
-                                action === "Delete" ? "text-red-600" : ""
-                              }
-                            >
-                              {action}
-                            </SelectItem>
-                          ))}
+                          {actionOptions.map((action) => {
+                            // Conditionally show Block/Unblock based on current status
+                            if (action === "Block" && user.status === "blocked")
+                              return null;
+                            if (
+                              action === "Unblock" &&
+                              user.status === "active"
+                            )
+                              return null;
+
+                            return (
+                              <SelectItem
+                                key={action}
+                                value={action}
+                                className={
+                                  action === "Delete" ? "text-red-600" : ""
+                                }
+                              >
+                                {action}
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
                     </TableCell>
@@ -243,8 +292,12 @@ const AdminUsers = () => {
                     <CardTitle className="text-base font-medium">
                       {user.full_name}
                     </CardTitle>
-                    <Badge variant={user.is_active ? "success" : "destructive"}>
-                      {user.is_active ? "Active" : "Blocked"}
+                    <Badge
+                      variant={
+                        user.status === "active" ? "success" : "destructive"
+                      }
+                    >
+                      {user.status === "active" ? "Active" : "Blocked"}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -257,10 +310,10 @@ const AdminUsers = () => {
                     <div>{user.phone_number}</div>
 
                     <div className="text-muted-foreground">Cameras:</div>
-                    <div>{user.cameras}</div>
+                    <div>{user.cameras_count}</div>
 
                     <div className="text-muted-foreground">Alerts:</div>
-                    <div>{user.alerts}</div>
+                    <div>{user.alerts_count}</div>
                   </div>
 
                   <div className="pt-2">
@@ -274,17 +327,25 @@ const AdminUsers = () => {
                         <SelectValue placeholder="Actions" />
                       </SelectTrigger>
                       <SelectContent>
-                        {actionOptions.map((action) => (
-                          <SelectItem
-                            key={action}
-                            value={action}
-                            className={
-                              action === "Delete" ? "text-red-600" : ""
-                            }
-                          >
-                            {action}
-                          </SelectItem>
-                        ))}
+                        {actionOptions.map((action) => {
+                          // Conditionally show Block/Unblock based on current status
+                          if (action === "Block" && user.status === "blocked")
+                            return null;
+                          if (action === "Unblock" && user.status === "active")
+                            return null;
+
+                          return (
+                            <SelectItem
+                              key={action}
+                              value={action}
+                              className={
+                                action === "Delete" ? "text-red-600" : ""
+                              }
+                            >
+                              {action}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>

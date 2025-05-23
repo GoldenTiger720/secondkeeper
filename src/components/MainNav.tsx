@@ -33,6 +33,7 @@ export function MainNav({
   ...props
 }: React.HTMLAttributes<HTMLElement>) {
   // State for notifications
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const location = useLocation();
@@ -62,6 +63,7 @@ export function MainNav({
 
     if (user) {
       setUsername(user.full_name || user.username);
+      console.log(user);
     }
     // fetchNotifications();
 
@@ -88,11 +90,6 @@ export function MainNav({
     { path: "/notifications", label: "Notification Settings" },
     { path: "/billing", label: "Billing" },
     { path: "/help", label: "Help & FAQ" },
-    {
-      path: "/admin",
-      label: "Admin",
-      icon: <Shield className="h-4 w-4 mr-1" />,
-    },
   ];
 
   return (
@@ -123,10 +120,21 @@ export function MainNav({
                   : "text-muted-foreground"
               )}
             >
-              {item.icon}
               <span>{item.label}</span>
             </Link>
           ))}
+          {user.role === "admin" && (
+            <Link
+              to="/admin"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary flex items-center",
+                isActive("/admin") ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              <Shield className="mr-2 h-5 w-5" />
+              <span>Admin</span>
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Navigation */}
@@ -155,7 +163,6 @@ export function MainNav({
                         : "text-muted-foreground"
                     )}
                   >
-                    {item.icon}
                     <span>{item.label}</span>
                   </Link>
                 ))}

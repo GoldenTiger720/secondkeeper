@@ -15,6 +15,7 @@ interface User {
   email: string;
   full_name?: string;
   phone_number?: string;
+  role: string;
   // Removed password field as it shouldn't be in the user object
 }
 

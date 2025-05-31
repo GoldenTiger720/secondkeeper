@@ -3,7 +3,7 @@ import axios from "axios";
 // Create an axios instance with base configuration
 const apiClient = axios.create({
   baseURL:
-    import.meta.env.VITE_API_BASE_URL || "https://admin.secondkeeper.com/api",
+    import.meta.env.VITE_API_BASE_URL || "https://api.secondkeeper.com/api",
   headers: {
     "Content-Type": "application/json",
   },

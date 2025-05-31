@@ -11,16 +11,20 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       // Proxy API requests to the backend during development
       "/api": {
-        target: "https://secondkeeper.cc",
+        target: "https://admin.secondkeeper.com",
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(
-    Boolean
-  ),
+  plugins: [react()],
+  build: {
+    outDir: "dist",
+    rollupOptions: {
+      output: { outDir: "dist", sourcemap: false },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

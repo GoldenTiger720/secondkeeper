@@ -63,7 +63,6 @@ export function MainNav({
 
     if (user) {
       setUsername(user.full_name || user.username);
-      console.log(user);
     }
     // fetchNotifications();
 
@@ -123,18 +122,6 @@ export function MainNav({
               <span>{item.label}</span>
             </Link>
           ))}
-          {user.role === "admin" && (
-            <Link
-              to="/admin"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary flex items-center",
-                isActive("/admin") ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Shield className="mr-2 h-5 w-5" />
-              <span>Admin</span>
-            </Link>
-          )}
         </nav>
 
         {/* Mobile Navigation */}

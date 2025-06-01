@@ -92,14 +92,7 @@ const App = () => (
                   </AuthGuard>
                 }
               />
-              <Route
-                path="/admin/*"
-                element={
-                  <AuthGuard>
-                    <Admin />
-                  </AuthGuard>
-                }
-              />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

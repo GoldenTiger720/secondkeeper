@@ -1,8 +1,8 @@
-
-import apiClient from './axiosConfig';
+import apiClient from "./axiosConfig";
 import { toast } from "@/hooks/use-toast";
 
 export interface AuthorizedFace {
+  data: AuthorizedFace;
   id: string;
   name: string;
   role: "primary" | "caregiver" | "family" | "other";
@@ -20,10 +20,18 @@ export interface AddFaceData {
 export const facesService = {
   getAllFaces: async (): Promise<AuthorizedFace[]> => {
     try {
-      const response = await apiClient.get('/faces/');
-      return response.data;
+      const response = await apiClient.get("/faces/");
+
+      // Handle both response formats
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      } else if (Array.isArray(response.data)) {
+        return response.data;
+      } else {
+        return response.data.data || [];
+      }
     } catch (error) {
-      console.error('Error fetching faces:', error);
+      console.error("Error fetching faces:", error);
       toast({
         title: "Error",
         description: "Could not load authorized faces",
@@ -35,10 +43,10 @@ export const facesService = {
 
   getFacesByRole: async (): Promise<Record<string, AuthorizedFace[]>> => {
     try {
-      const response = await apiClient.get('/faces/by_role/');
+      const response = await apiClient.get("/faces/by_role/");
       return response.data;
     } catch (error) {
-      console.error('Error fetching faces by role:', error);
+      console.error("Error fetching faces by role:", error);
       toast({
         title: "Error",
         description: "Could not load authorized faces",
@@ -48,55 +56,139 @@ export const facesService = {
     }
   },
 
-  addFace: async (faceData: AddFaceData): Promise<AuthorizedFace> => {
+  addFace: async (
+    faceData: FormData | AddFaceData
+  ): Promise<AuthorizedFace> => {
     try {
-      // Use FormData for file upload
-      const formData = new FormData();
-      formData.append('name', faceData.name);
-      formData.append('role', faceData.role);
-      
-      if (faceData.face_image) {
-        formData.append('face_image', faceData.face_image);
+      let requestData: FormData;
+
+      // Handle both FormData and object input
+      if (faceData instanceof FormData) {
+        requestData = faceData;
+      } else {
+        // Convert AddFaceData to FormData
+        requestData = new FormData();
+        requestData.append("name", faceData.name);
+        requestData.append("role", faceData.role);
+
+        if (faceData.face_image) {
+          requestData.append("face_image", faceData.face_image);
+        }
       }
 
-      const response = await apiClient.post('/faces/upload_face_image/', formData, {
+      const response = await apiClient.post("/faces/", requestData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
-      
-      toast({
-        title: "Success",
-        description: `${faceData.name} has been added to authorized faces.`,
-      });
-      
-      return response.data;
+
+      // Handle response format
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      } else {
+        return response.data;
+      }
     } catch (error) {
-      console.error('Error adding face:', error);
-      toast({
-        title: "Error",
-        description: "Could not add new face",
-        variant: "destructive",
-      });
+      console.error("Error adding face:", error);
+
+      // Re-throw the error so it can be handled by the component
       throw error;
     }
   },
 
   removeFace: async (faceId: string): Promise<void> => {
     try {
-      await apiClient.delete(`/faces/${faceId}/remove_face/`);
-      
+      await apiClient.delete(`/faces/${faceId}/`);
+
       toast({
         title: "Success",
         description: "Face has been removed from authorized faces.",
       });
     } catch (error) {
-      console.error('Error removing face:', error);
+      console.error("Error removing face:", error);
       toast({
         title: "Error",
         description: "Could not remove face",
         variant: "destructive",
       });
+      throw error;
+    }
+  },
+
+  updateFace: async (
+    faceId: string,
+    faceData: Partial<AddFaceData>
+  ): Promise<AuthorizedFace> => {
+    try {
+      const formData = new FormData();
+
+      if (faceData.name) {
+        formData.append("name", faceData.name);
+      }
+
+      if (faceData.role) {
+        formData.append("role", faceData.role);
+      }
+
+      if (faceData.face_image) {
+        formData.append("face_image", faceData.face_image);
+      }
+
+      const response = await apiClient.put(`/faces/${faceId}/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      } else {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("Error updating face:", error);
+      throw error;
+    }
+  },
+
+  getFace: async (faceId: string): Promise<AuthorizedFace> => {
+    try {
+      const response = await apiClient.get(`/faces/${faceId}/`);
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      } else {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("Error fetching face:", error);
+      throw error;
+    }
+  },
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  verifyFace: async (faceImage: File, cameraId?: string): Promise<any> => {
+    try {
+      const formData = new FormData();
+      formData.append("face_image", faceImage);
+
+      if (cameraId) {
+        formData.append("camera_id", cameraId);
+      }
+
+      const response = await apiClient.post("/faces/verify/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      } else {
+        return response.data;
+      }
+    } catch (error) {
+      console.error("Error verifying face:", error);
       throw error;
     }
   },

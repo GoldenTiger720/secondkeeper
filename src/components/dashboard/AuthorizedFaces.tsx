@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,7 +34,10 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { facesService, AuthorizedFace as AuthorizedFaceType } from "@/lib/api/facesService";
+import {
+  facesService,
+  AuthorizedFace as AuthorizedFaceType,
+} from "@/lib/api/facesService";
 
 interface FaceProps {
   id: string;
@@ -68,7 +70,13 @@ const getRandomColor = (str: string) => {
   return colors[index];
 };
 
-export function AuthorizedFace({ id, name, imageUrl, role, onDelete }: FaceProps) {
+export function AuthorizedFace({
+  id,
+  name,
+  imageUrl,
+  role,
+  onDelete,
+}: FaceProps) {
   const { toast } = useToast();
 
   const handleDelete = () => {
@@ -82,7 +90,7 @@ export function AuthorizedFace({ id, name, imageUrl, role, onDelete }: FaceProps
       <div className="relative h-12 w-12 flex-shrink-0">
         {imageUrl ? (
           <div
-            className="h-full w-full rounded-full bg-cover bg-center"
+            className="h-full w-full rounded-full bg-cover bg-center border"
             style={{ backgroundImage: `url(${imageUrl})` }}
           />
         ) : (
@@ -118,7 +126,7 @@ export function AuthorizedFace({ id, name, imageUrl, role, onDelete }: FaceProps
 const addPersonSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   role: z.enum(["primary", "caregiver", "family", "other"]),
-  image: z.instanceof(File).optional(),
+  face_image: z.instanceof(File).optional(),
 });
 
 type AddPersonFormValues = z.infer<typeof addPersonSchema>;
@@ -127,6 +135,7 @@ export function AuthorizedFacesCard() {
   const [faces, setFaces] = useState<AuthorizedFaceType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -134,17 +143,27 @@ export function AuthorizedFacesCard() {
     const loadFaces = async () => {
       try {
         setIsLoading(true);
-        const data = await facesService.getAllFaces();
-        setFaces(data);
+        const response = await facesService.getAllFaces();
+
+        // Handle both array response and object with data property
+        const facesData = Array.isArray(response)
+          ? response
+          : (response as { results?: AuthorizedFaceType[] }).results || [];
+        setFaces(facesData);
       } catch (error) {
         console.error("Failed to load faces:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load authorized faces",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     loadFaces();
-  }, []);
+  }, [toast]);
 
   const form = useForm<AddPersonFormValues>({
     resolver: zodResolver(addPersonSchema),
@@ -157,7 +176,27 @@ export function AuthorizedFacesCard() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      form.setValue("image", file);
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      form.setValue("face_image", file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result as string);
@@ -168,27 +207,82 @@ export function AuthorizedFacesCard() {
 
   const onSubmit = async (data: AddPersonFormValues) => {
     try {
-      const newFace = await facesService.addFace({
-        name: data.name,
-        role: data.role,
-        face_image: data.image,
-      });
-      
-      setFaces(currentFaces => [...currentFaces, newFace]);
+      setIsSubmitting(true);
+
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("role", data.role);
+
+      if (data.face_image) {
+        formData.append("face_image", data.face_image);
+      }
+
+      // Call the API
+      const response = await facesService.addFace(formData);
+
+      // Handle response - extract the actual face data
+      const newFace = response.data || response;
+
+      // Add to local state
+      setFaces((currentFaces) => [...currentFaces, newFace]);
+
+      // Close modal and reset form
       setIsAddPersonOpen(false);
       form.reset();
       setPreviewImage(null);
+
+      toast({
+        title: "Success",
+        description: `${data.name} has been added to authorized faces.`,
+      });
     } catch (error) {
       console.error("Failed to add face:", error);
+
+      let errorMessage = "Failed to add person";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.errors?.length > 0) {
+        errorMessage = error.response.data.errors.join(", ");
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDeleteFace = async (id: string) => {
     try {
       await facesService.removeFace(id);
-      setFaces(currentFaces => currentFaces.filter(face => face.id !== id));
+      setFaces((currentFaces) => currentFaces.filter((face) => face.id !== id));
+
+      toast({
+        title: "Success",
+        description: "Face has been removed from authorized faces.",
+      });
     } catch (error) {
       console.error("Failed to delete face:", error);
+
+      toast({
+        title: "Error",
+        description: "Failed to remove face",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleModalClose = () => {
+    if (!isSubmitting) {
+      setIsAddPersonOpen(false);
+      form.reset();
+      setPreviewImage(null);
     }
   };
 
@@ -205,15 +299,18 @@ export function AuthorizedFacesCard() {
           <ScrollArea className="h-64 pr-4">
             {isLoading ? (
               <div className="flex justify-center items-center h-full">
-                <p className="text-muted-foreground">Loading...</p>
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+                  <p className="text-muted-foreground">Loading...</p>
+                </div>
               </div>
             ) : faces.length > 0 ? (
               <div className="space-y-4">
                 {faces.map((face) => (
-                  <AuthorizedFace 
-                    key={face.id} 
-                    id={face.id} 
-                    name={face.name} 
+                  <AuthorizedFace
+                    key={face.id}
+                    id={face.id}
+                    name={face.name}
                     role={face.role}
                     imageUrl={face.image_url}
                     onDelete={handleDeleteFace}
@@ -222,13 +319,19 @@ export function AuthorizedFacesCard() {
               </div>
             ) : (
               <div className="flex justify-center items-center h-full">
-                <p className="text-muted-foreground">No authorized faces added yet</p>
+                <p className="text-muted-foreground">
+                  No authorized faces added yet
+                </p>
               </div>
             )}
           </ScrollArea>
         </CardContent>
         <CardFooter className="pt-6">
-          <Button className="w-full" onClick={() => setIsAddPersonOpen(true)}>
+          <Button
+            className="w-full"
+            onClick={() => setIsAddPersonOpen(true)}
+            disabled={isLoading}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Add New Person
           </Button>
@@ -236,7 +339,7 @@ export function AuthorizedFacesCard() {
       </Card>
 
       {/* Add New Person Dialog */}
-      <Dialog open={isAddPersonOpen} onOpenChange={setIsAddPersonOpen}>
+      <Dialog open={isAddPersonOpen} onOpenChange={handleModalClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Add New Person</DialogTitle>
@@ -254,7 +357,11 @@ export function AuthorizedFacesCard() {
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input
+                        placeholder="John Doe"
+                        {...field}
+                        disabled={isSubmitting}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -272,6 +379,7 @@ export function AuthorizedFacesCard() {
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                         className="flex flex-col space-y-1"
+                        disabled={isSubmitting}
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="primary" id="primary" />
@@ -302,14 +410,14 @@ export function AuthorizedFacesCard() {
                   <div className="flex items-center justify-center w-full">
                     <Label
                       htmlFor="face-image-upload"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-md cursor-pointer bg-muted/50 hover:bg-muted"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-md cursor-pointer bg-muted/50 hover:bg-muted transition-colors"
                     >
                       {previewImage ? (
                         <div className="w-full h-full flex items-center justify-center">
                           <img
                             src={previewImage}
                             alt="Preview"
-                            className="max-h-[120px] max-w-full object-contain"
+                            className="max-h-[120px] max-w-full object-contain rounded"
                           />
                         </div>
                       ) : (
@@ -317,6 +425,9 @@ export function AuthorizedFacesCard() {
                           <User className="w-8 h-8 text-muted-foreground" />
                           <p className="text-sm text-muted-foreground mt-2">
                             Click to upload face image
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Max 5MB, JPG/PNG only
                           </p>
                         </div>
                       )}
@@ -326,6 +437,7 @@ export function AuthorizedFacesCard() {
                         accept="image/*"
                         className="hidden"
                         onChange={handleImageChange}
+                        disabled={isSubmitting}
                       />
                     </Label>
                   </div>
@@ -336,11 +448,21 @@ export function AuthorizedFacesCard() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsAddPersonOpen(false)}
+                  onClick={handleModalClose}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
-                <Button type="submit">Save Person</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Person"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           </Form>

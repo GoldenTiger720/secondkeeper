@@ -1,12 +1,9 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AlertCard } from "@/components/dashboard/AlertCard";
-import { AddCameraDialog } from "@/components/dashboard/AddCameraDialog";
-import { CameraStatusCard } from "@/components/dashboard/CameraStatusCard";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { AuthorizedFacesCard } from "@/components/dashboard/AuthorizedFaces";
 import { Bell, Calendar, Camera, Clock, ShieldAlert } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Mock data
 const alerts = [

@@ -15,7 +15,6 @@ import Notifications from "./pages/Notifications";
 import Billing from "./pages/Billing";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
-import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 

@@ -12,7 +12,7 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
   const { isAuthenticated, isLoading, checkAuth } = useAuth();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
-
+  // This state is used to handle the initial authentication check
   useEffect(() => {
     const verify = async () => {
       await checkAuth();

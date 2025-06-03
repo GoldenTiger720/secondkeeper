@@ -77,8 +77,6 @@ export function AuthorizedFace({
   role,
   onDelete,
 }: FaceProps) {
-  const { toast } = useToast();
-
   const handleDelete = () => {
     onDelete(id);
   };
@@ -86,7 +84,7 @@ export function AuthorizedFace({
   const bgColor = getRandomColor(name);
 
   return (
-    <div className="flex items-center gap-3 group">
+    <div className="flex items-center gap-3 group hover:bg-muted/50 rounded-md p-2">
       <div className="relative h-12 w-12 flex-shrink-0">
         {imageUrl ? (
           <div

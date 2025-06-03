@@ -11,11 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Upload, User, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/notifications";
 import {
   facesService,
   AuthorizedFace as AuthorizedFaceType,
 } from "@/lib/api/facesService";
+import { AddPersonDialog } from "@/components/AddNewPersonDialog";
 
 interface FaceProps {
   id: string;
@@ -49,8 +50,6 @@ const getRandomColor = (str: string) => {
 };
 
 const AuthorizedFace = ({ id, name, imageUrl, role, onDelete }: FaceProps) => {
-  const { toast } = useToast();
-
   const handleDelete = () => {
     onDelete(id);
   };
@@ -98,15 +97,15 @@ const AuthorizedFace = ({ id, name, imageUrl, role, onDelete }: FaceProps) => {
 const Faces = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [faces, setFaces] = useState<AuthorizedFaceType[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
 
   useEffect(() => {
     const loadFaces = async () => {
       try {
         setIsLoading(true);
         const data = await facesService.getAllFaces();
-        setFaces(data);
+        setFaces(data || []);
       } catch (error) {
         console.error("Failed to load faces:", error);
         setIsLoading(false);
@@ -115,7 +114,7 @@ const Faces = () => {
       }
     };
 
-    // loadFaces();
+    loadFaces();
   }, []);
 
   const filteredFaces = faces.filter(
@@ -124,28 +123,14 @@ const Faces = () => {
       face.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddPerson = () => {
-    toast({
-      title: "Add Person",
-      description: "This feature would open a form to add a new person.",
-    });
-  };
-
-  const handleUploadImage = () => {
-    toast({
-      title: "Upload Image",
-      description: "This feature would open a dialog to upload face images.",
-    });
+  const handlePersonAdded = (newPerson: AuthorizedFaceType) => {
+    setFaces((currentFaces) => [...currentFaces, newPerson]);
   };
 
   const handleDeleteFace = async (id: string) => {
     try {
       await facesService.removeFace(id);
-      setFaces(faces.filter((face) => face.id !== id));
-      toast({
-        title: "Face Removed",
-        description: "Face has been removed from authorized faces.",
-      });
+      setFaces((currentFaces) => currentFaces.filter((face) => face.id !== id));
     } catch (error) {
       console.error("Failed to delete face:", error);
     }
@@ -159,13 +144,13 @@ const Faces = () => {
             Authorized Faces
           </h1>
           <div className="flex gap-2">
-            <Button onClick={handleAddPerson}>
+            <Button
+              className="w-full"
+              onClick={() => setIsAddPersonOpen(true)}
+              disabled={isLoading}
+            >
               <Plus className="mr-2 h-4 w-4" />
-              Add Person
-            </Button>
-            <Button variant="outline" onClick={handleUploadImage}>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Image
+              Add New Person
             </Button>
           </div>
         </div>
@@ -200,7 +185,7 @@ const Faces = () => {
                     id={face.id}
                     name={face.name}
                     role={face.role}
-                    imageUrl={face.image_url}
+                    imageUrl={face.face_image}
                     onDelete={handleDeleteFace}
                   />
                 ))}
@@ -216,6 +201,11 @@ const Faces = () => {
             )}
           </CardContent>
         </Card>
+        <AddPersonDialog
+          open={isAddPersonOpen}
+          onOpenChange={setIsAddPersonOpen}
+          onPersonAdded={handlePersonAdded}
+        />
       </div>
     </DashboardLayout>
   );

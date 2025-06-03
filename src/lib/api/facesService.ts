@@ -1,12 +1,12 @@
 import apiClient from "./axiosConfig";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/lib/notifications";
 
 export interface AuthorizedFace {
   data: AuthorizedFace;
   id: string;
   name: string;
   role: "primary" | "caregiver" | "family" | "other";
-  image_url?: string;
+  face_image?: string;
   created_at: string;
   updated_at: string;
 }
@@ -24,7 +24,7 @@ export const facesService = {
 
       // Handle both response formats
       if (response.data.success && response.data.data) {
-        return response.data.data;
+        return response.data.data.results;
       } else if (Array.isArray(response.data)) {
         return response.data;
       } else {
@@ -32,11 +32,7 @@ export const facesService = {
       }
     } catch (error) {
       console.error("Error fetching faces:", error);
-      toast({
-        title: "Error",
-        description: "Could not load authorized faces",
-        variant: "destructive",
-      });
+      toast.error("Could not load authorized faces");
       throw error;
     }
   },
@@ -47,11 +43,7 @@ export const facesService = {
       return response.data;
     } catch (error) {
       console.error("Error fetching faces by role:", error);
-      toast({
-        title: "Error",
-        description: "Could not load authorized faces",
-        variant: "destructive",
-      });
+      toast.error("Could not load authorized faces");
       throw error;
     }
   },
@@ -99,18 +91,10 @@ export const facesService = {
   removeFace: async (faceId: string): Promise<void> => {
     try {
       await apiClient.delete(`/faces/${faceId}/`);
-
-      toast({
-        title: "Success",
-        description: "Face has been removed from authorized faces.",
-      });
+      toast.success("Face has been removed from authorized faces.");
     } catch (error) {
       console.error("Error removing face:", error);
-      toast({
-        title: "Error",
-        description: "Could not remove face",
-        variant: "destructive",
-      });
+      toast.error("Could not remove face");
       throw error;
     }
   },

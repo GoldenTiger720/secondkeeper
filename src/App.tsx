@@ -15,6 +15,7 @@ import Notifications from "./pages/Notifications";
 import Billing from "./pages/Billing";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
+import ToastContainer from "@/components/ToastContainer";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +95,7 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <ToastContainer />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

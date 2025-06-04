@@ -115,7 +115,7 @@ const Faces = () => {
 
     loadFaces();
   }, []);
-
+  //filter
   const filteredFaces = faces.filter(
     (face) =>
       face.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

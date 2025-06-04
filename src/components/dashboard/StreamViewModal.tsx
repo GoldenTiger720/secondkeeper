@@ -140,6 +140,7 @@ export function StreamViewModal({
         }, 3000);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraId, quality, isOpen, toast]);
 
   const handleWebSocketMessage = useCallback(
@@ -190,6 +191,7 @@ export function StreamViewModal({
           break;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [cameraName]
   );
 

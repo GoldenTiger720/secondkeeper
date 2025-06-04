@@ -8,10 +8,9 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Upload, User, X } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/lib/notifications";
 import {
   facesService,
   AuthorizedFace as AuthorizedFaceType,

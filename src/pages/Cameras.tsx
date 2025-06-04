@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect, useCallback } from "react";
 import { camerasService, Camera as CameraType } from "@/lib/api/camerasService";
 import { toast } from "@/lib/notifications";
-import { StreamViewModal } from "@/components/dashboard/StreamViewModal";
 import {
   Table,
   TableBody,
@@ -51,8 +50,6 @@ const Cameras = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
-  const [isStreamModalOpen, setIsStreamModalOpen] = useState(false);
-  const [isStreamLoading, setIsStreamLoading] = useState(false);
 
   const loadCameras = useCallback(async (showToast = false) => {
     try {
@@ -116,31 +113,6 @@ const Cameras = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-  };
-
-  const handleViewStream = (camera: CameraType) => {
-    setSelectedCamera(camera);
-    console.log("Selected camera for stream:", camera);
-    if (camera.status !== "online") {
-      toast.error("Cannot view stream. Camera is currently offline.");
-      return;
-    }
-
-    setIsStreamLoading(true);
-    try {
-      // Just open the modal - StreamViewModal will handle the connection
-      setIsStreamModalOpen(true);
-      toast.error(`Loading live stream from ${camera.name}...`);
-    } catch (error) {
-      console.error("Error opening stream:", error);
-      toast.error("Failed to open camera stream.");
-    } finally {
-      setIsStreamLoading(false);
-    }
-  };
-
-  const handleStreamModalClose = () => {
-    setIsStreamModalOpen(false);
   };
 
   useEffect(() => {
@@ -334,7 +306,6 @@ const Cameras = () => {
                         <TableRow
                           key={camera.id}
                           className="hover:bg-muted/50 transition-colors cursor-pointer"
-                          onClick={() => handleViewStream(camera)}
                         >
                           <TableCell className="text-center font-medium">
                             {startIndex + index + 1}
@@ -582,15 +553,6 @@ const Cameras = () => {
           </CardContent>
         </Card>
       </div>
-      {selectedCamera && (
-        <StreamViewModal
-          isOpen={isStreamModalOpen}
-          onClose={handleStreamModalClose}
-          cameraId={selectedCamera.id}
-          cameraName={selectedCamera.name}
-          cameraURL={selectedCamera.stream_url}
-        />
-      )}
 
       {/* Edit Camera Dialog */}
       {selectedCamera && (

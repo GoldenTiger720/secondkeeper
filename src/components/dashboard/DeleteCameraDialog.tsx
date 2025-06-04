@@ -137,7 +137,7 @@ export function DeleteCameraDialog({
           <div className="space-y-2">
             <Label htmlFor="confirmation" className="text-sm font-medium">
               Type{" "}
-              <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">
+              <code className="bg-gray-600 px-1 py-0.5 rounded text-sm font-mono">
                 {cameraName}
               </code>{" "}
               to confirm deletion:

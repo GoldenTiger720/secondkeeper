@@ -35,6 +35,7 @@ interface StreamViewModalProps {
   onClose: () => void;
   cameraId: string;
   cameraName: string;
+  cameraURL: string;
 }
 
 interface StreamStats {
@@ -51,6 +52,7 @@ export function StreamViewModal({
   onClose,
   cameraId,
   cameraName,
+  cameraURL,
 }: StreamViewModalProps) {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -85,6 +87,7 @@ export function StreamViewModal({
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws/camera/${cameraId}/stream/`;
+    console.log("Connecting to WebSocket:", wsUrl);
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;

@@ -588,6 +588,7 @@ const Cameras = () => {
           onClose={handleStreamModalClose}
           cameraId={selectedCamera.id}
           cameraName={selectedCamera.name}
+          cameraURL={selectedCamera.stream_url}
         />
       )}
 

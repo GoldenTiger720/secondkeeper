@@ -6,15 +6,11 @@ export interface Camera {
   name: string;
   status: string;
   stream_url: string;
-  username?: string;
-  password?: string;
 }
 
 export interface AddCameraData {
   name: string;
   stream_url: string;
-  username?: string;
-  password?: string;
 }
 
 export interface StreamResponse {
@@ -228,15 +224,11 @@ export const camerasService = {
 
   // Utility methods
   testCameraConnection: async (
-    streamUrl: string,
-    username?: string,
-    password?: string
+    streamUrl: string
   ): Promise<{ success: boolean; message: string }> => {
     try {
       const response = await apiClient.post("/cameras/test_connection/", {
         stream_url: streamUrl,
-        username: username || "",
-        password: password || "",
       });
       return response.data;
     } catch (error) {

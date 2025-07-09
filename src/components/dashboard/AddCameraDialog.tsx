@@ -37,8 +37,6 @@ interface AddCameraDialogProps {
 interface CameraFormData {
   name: string;
   stream_url: string;
-  username: string;
-  password: string;
 }
 
 export function AddCameraDialog({
@@ -52,8 +50,6 @@ export function AddCameraDialog({
   const [formData, setFormData] = useState<CameraFormData>({
     name: "",
     stream_url: "",
-    username: "",
-    password: "",
   });
 
   const handleChange = (field: keyof CameraFormData, value) => {
@@ -78,9 +74,6 @@ export function AddCameraDialog({
       const response = await camerasService.addCamera({
         name: formData.name.trim(),
         stream_url: formData.stream_url.trim(),
-        username: formData.username.trim() || undefined,
-        password: formData.password || undefined,
-        ...formData,
       });
 
       toast({
@@ -92,8 +85,6 @@ export function AddCameraDialog({
       setFormData({
         name: "",
         stream_url: "",
-        username: "",
-        password: "",
       });
       setOpen(false);
 
@@ -172,35 +163,12 @@ export function AddCameraDialog({
                       onChange={(e) =>
                         handleChange("stream_url", e.target.value)
                       }
-                      placeholder="rtsp://username:password@192.168.1.100:554/stream"
+                      placeholder="rtsp://192.168.1.100:554/stream"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="username">Username (Optional)</Label>
-                    <Input
-                      id="username"
-                      name="username"
-                      value={formData.username}
-                      onChange={(e) => handleChange("username", e.target.value)}
-                      placeholder="admin"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="password">Password (Optional)</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => handleChange("password", e.target.value)}
-                      placeholder="••••••••"
-                    />
-                  </div>
-                </div>
               </div>
             </TabsContent>
           </Tabs>

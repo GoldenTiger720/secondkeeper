@@ -26,8 +26,6 @@ interface EditCameraDialogProps {
 interface CameraData {
   name: string;
   stream_url: string;
-  username: string;
-  password: string;
 }
 
 export function EditCameraDialog({
@@ -44,8 +42,6 @@ export function EditCameraDialog({
   const [formData, setFormData] = useState<CameraData>({
     name: cameraName,
     stream_url: currentStreamUrl,
-    username: "",
-    password: "",
   });
 
   const loadCameraData = React.useCallback(async () => {
@@ -57,8 +53,6 @@ export function EditCameraDialog({
         setFormData({
           name: camera.name || cameraName,
           stream_url: camera.stream_url || currentStreamUrl,
-          username: camera.username || "",
-          password: "", // Don't load password for security
         });
       }
     } catch (error) {
@@ -91,13 +85,7 @@ export function EditCameraDialog({
     setIsSubmitting(true);
 
     try {
-      // Prepare data - only send password if it's not empty
-      const updateData = { ...formData };
-      if (!updateData.password) {
-        delete updateData.password;
-      }
-
-      const response = await camerasService.updateCamera(cameraId, updateData);
+      const response = await camerasService.updateCamera(cameraId, formData);
 
       if (response.success) {
         toast({
@@ -177,32 +165,11 @@ export function EditCameraDialog({
                     id="edit-stream_url"
                     value={formData.stream_url}
                     onChange={(e) => handleChange("stream_url", e.target.value)}
-                    placeholder="rtsp://username:password@192.168.1.10:554/stream"
+                    placeholder="rtsp://192.168.1.10:554/stream"
                     required
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="edit-username">Username (Optional)</Label>
-                    <Input
-                      id="edit-username"
-                      value={formData.username}
-                      onChange={(e) => handleChange("username", e.target.value)}
-                      placeholder="admin"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="edit-password">Password (Optional)</Label>
-                    <Input
-                      id="edit-password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => handleChange("password", e.target.value)}
-                      placeholder="Leave empty to keep current"
-                    />
-                  </div>
-                </div>
               </div>
             </TabsContent>
           </Tabs>

@@ -50,9 +50,18 @@ export const camerasService = {
       console.error("Error fetching cameras:", error);
       toast({
         title: "Error",
-        description: "Could not load cameras",
+        description: "Unable to load cameras",
         variant: "destructive",
       });
+      
+      // Clear tokens and redirect to login on any error
+      localStorage.removeItem("secondkeeper_token");
+      localStorage.removeItem("secondkeeper_access_token");
+      localStorage.removeItem("safeguard_user");
+      
+      // Redirect to login page
+      window.location.href = "/login";
+      
       throw error;
     }
   },

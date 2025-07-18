@@ -32,7 +32,16 @@ export const facesService = {
       }
     } catch (error) {
       console.error("Error fetching faces:", error);
-      toast.error("Could not load authorized faces");
+      toast.error("Unable to load authorized faces");
+      
+      // Clear tokens and redirect to login on any error
+      localStorage.removeItem("secondkeeper_token");
+      localStorage.removeItem("secondkeeper_access_token");
+      localStorage.removeItem("safeguard_user");
+      
+      // Redirect to login page
+      window.location.href = "/login";
+      
       throw error;
     }
   },

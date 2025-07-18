@@ -74,13 +74,76 @@ export const authService = {
     localStorage.removeItem("secondkeeper_access_token");
   },
 
+  clearExpiredTokens: () => {
+    const refreshToken = localStorage.getItem("secondkeeper_token");
+    const accessToken = localStorage.getItem("secondkeeper_access_token");
+    
+    if (!refreshToken || !accessToken) {
+      authService.logout();
+      return;
+    }
+    
+    try {
+      // Check if refresh token is expired
+      const refreshTokenParts = refreshToken.split('.');
+      if (refreshTokenParts.length === 3) {
+        const refreshPayload = JSON.parse(atob(refreshTokenParts[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        if (refreshPayload.exp < currentTime) {
+          // Refresh token is expired, clear everything
+          authService.logout();
+        }
+      }
+    } catch (error) {
+      // If we can't parse the token, clear everything
+      authService.logout();
+    }
+  },
+
   getCurrentUser: () => {
     const userJson = localStorage.getItem("safeguard_user");
     return userJson ? JSON.parse(userJson) : null;
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem("secondkeeper_token");
+    const refreshToken = localStorage.getItem("secondkeeper_token");
+    const accessToken = localStorage.getItem("secondkeeper_access_token");
+    
+    if (!refreshToken || !accessToken) {
+      return false;
+    }
+    
+    // Check if access token is expired
+    try {
+      const tokenParts = accessToken.split('.');
+      if (tokenParts.length !== 3) {
+        return false;
+      }
+      
+      const payload = JSON.parse(atob(tokenParts[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      
+      // If access token is expired, we need to verify refresh token too
+      if (payload.exp < currentTime) {
+        // Check refresh token expiry
+        const refreshTokenParts = refreshToken.split('.');
+        if (refreshTokenParts.length !== 3) {
+          return false;
+        }
+        
+        const refreshPayload = JSON.parse(atob(refreshTokenParts[1]));
+        // If refresh token is also expired, user needs to login again
+        if (refreshPayload.exp < currentTime) {
+          return false;
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      // If we can't parse the token, consider it invalid
+      return false;
+    }
   },
 
   updateProfile: async (

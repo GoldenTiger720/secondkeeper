@@ -16,6 +16,7 @@ import {
   AuthorizedFace as AuthorizedFaceType,
 } from "@/lib/api/facesService";
 import { AddPersonDialog } from "@/components/AddNewPersonDialog";
+import { useNavigate } from "react-router-dom";
 
 interface FaceProps {
   id: string;
@@ -98,6 +99,7 @@ const Faces = () => {
   const [faces, setFaces] = useState<AuthorizedFaceType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadFaces = async () => {
@@ -105,8 +107,18 @@ const Faces = () => {
         setIsLoading(true);
         const data = await facesService.getAllFaces();
         setFaces(data || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to load faces:", error);
+        
+        // Handle authentication errors, server errors, or network errors
+        if (error.response?.status === 401 || error.response?.status === 500 || !error.response) {
+          localStorage.removeItem("secondkeeper_token");
+          localStorage.removeItem("secondkeeper_access_token");
+          localStorage.removeItem("safeguard_user");
+          navigate('/login');
+          return;
+        }
+        
         setIsLoading(false);
       } finally {
         setIsLoading(false);
@@ -114,7 +126,7 @@ const Faces = () => {
     };
 
     loadFaces();
-  }, []);
+  }, [navigate]);
   //filter
   const filteredFaces = faces.filter(
     (face) =>
@@ -130,8 +142,16 @@ const Faces = () => {
     try {
       await facesService.removeFace(id);
       setFaces((currentFaces) => currentFaces.filter((face) => face.id !== id));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete face:", error);
+      
+      if (error.response?.status === 401 || error.response?.status === 500 || !error.response) {
+        localStorage.removeItem("secondkeeper_token");
+        localStorage.removeItem("secondkeeper_access_token");
+        localStorage.removeItem("safeguard_user");
+        navigate('/login');
+        return;
+      }
     }
   };
 

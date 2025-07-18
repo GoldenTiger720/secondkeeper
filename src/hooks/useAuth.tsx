@@ -38,6 +38,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Use useCallback to memoize the checkAuth function
   const checkAuth = useCallback(async () => {
     try {
+      // Clear expired tokens first
+      authService.clearExpiredTokens();
+      
       if (authService.isAuthenticated()) {
         const currentUser = authService.getCurrentUser();
         if (currentUser) {

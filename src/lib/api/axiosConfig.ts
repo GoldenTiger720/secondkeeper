@@ -44,11 +44,16 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${access}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        console.error("Error refreshing token:", error);
+        console.error("Error refreshing token:", refreshError);
+        // Clear all authentication data
         localStorage.removeItem("secondkeeper_token");
         localStorage.removeItem("secondkeeper_access_token");
         localStorage.removeItem("safeguard_user");
-        window.location.href = "/login";
+        
+        // Only redirect if not already on login page
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }

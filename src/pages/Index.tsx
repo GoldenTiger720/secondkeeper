@@ -4,6 +4,8 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { AuthorizedFacesCard } from "@/components/dashboard/AuthorizedFaces";
 import { Bell, Calendar, Camera, Clock, ShieldAlert } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 // Mock data
 const alerts = [
@@ -86,6 +88,26 @@ const badgePulseStyle = `
 `;
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      // Handle authentication errors, server errors, or network errors
+      if (event.reason?.response?.status === 401 || event.reason?.response?.status === 500 || !event.reason?.response) {
+        localStorage.removeItem("secondkeeper_token");
+        localStorage.removeItem("secondkeeper_access_token");
+        localStorage.removeItem("safeguard_user");
+        navigate('/login');
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, [navigate]);
+
   return (
     <DashboardLayout>
       {/* Add the style tag for badge animation */}

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect, useCallback } from "react";
 import { camerasService, Camera as CameraType } from "@/lib/api/camerasService";
 import { toast } from "@/lib/notifications";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -51,6 +52,8 @@ const Cameras = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCamera, setSelectedCamera] = useState<CameraType | null>(null);
 
+  const navigate = useNavigate();
+
   const loadCameras = useCallback(async (showToast = false) => {
     try {
       setIsLoading(true);
@@ -67,34 +70,83 @@ const Cameras = () => {
       if (showToast) {
         toast.success("Cameras loaded successfully");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error loading cameras:", error);
+      
+      // Handle authentication errors or server errors
+      if (error.response?.status === 401 || error.response?.status === 500) {
+        localStorage.removeItem("secondkeeper_token");
+        localStorage.removeItem("secondkeeper_access_token");
+        localStorage.removeItem("safeguard_user");
+        navigate('/login');
+        return;
+      }
+      
+      // Handle network errors (server down, no internet, etc.)
+      if (!error.response) {
+        localStorage.removeItem("secondkeeper_token");
+        localStorage.removeItem("secondkeeper_access_token");
+        localStorage.removeItem("safeguard_user");
+        navigate('/login');
+        return;
+      }
+      
       toast.error("Failed to load cameras. Please try again later.");
       setCameras([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [navigate]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await loadCameras(true);
   }, [loadCameras]);
 
-  const handleCameraUpdated = useCallback(() => {
-    loadCameras();
-    setEditDialogOpen(false);
-  }, [loadCameras]);
+  const handleCameraUpdated = useCallback(async () => {
+    try {
+      await loadCameras();
+      setEditDialogOpen(false);
+    } catch (error: any) {
+      if (error.response?.status === 401 || error.response?.status === 500 || !error.response) {
+        localStorage.removeItem("secondkeeper_token");
+        localStorage.removeItem("secondkeeper_access_token");
+        localStorage.removeItem("safeguard_user");
+        navigate('/login');
+        return;
+      }
+    }
+  }, [loadCameras, navigate]);
 
-  const handleCameraDeleted = useCallback(() => {
-    loadCameras();
-    setDeleteDialogOpen(false);
-  }, [loadCameras]);
+  const handleCameraDeleted = useCallback(async () => {
+    try {
+      await loadCameras();
+      setDeleteDialogOpen(false);
+    } catch (error: any) {
+      if (error.response?.status === 401 || error.response?.status === 500 || !error.response) {
+        localStorage.removeItem("secondkeeper_token");
+        localStorage.removeItem("secondkeeper_access_token");
+        localStorage.removeItem("safeguard_user");
+        navigate('/login');
+        return;
+      }
+    }
+  }, [loadCameras, navigate]);
 
-  const handleCameraAdded = useCallback(() => {
-    loadCameras();
-  }, [loadCameras]);
+  const handleCameraAdded = useCallback(async () => {
+    try {
+      await loadCameras();
+    } catch (error: any) {
+      if (error.response?.status === 401 || error.response?.status === 500 || !error.response) {
+        localStorage.removeItem("secondkeeper_token");
+        localStorage.removeItem("secondkeeper_access_token");
+        localStorage.removeItem("safeguard_user");
+        navigate('/login');
+        return;
+      }
+    }
+  }, [loadCameras, navigate]);
 
   const handleEditCamera = (camera: CameraType) => {
     setSelectedCamera(camera);

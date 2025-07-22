@@ -1,6 +1,7 @@
 
 import apiClient from './axiosConfig';
 import { toast } from "@/hooks/use-toast";
+import { type Camera } from './camerasService';
 
 export interface Alert {
   id: number;
@@ -34,10 +35,10 @@ export const alertsService = {
     }
   },
 
-  getRecentAlerts: async (limit: number = 4): Promise<{ data: Alert[] }> => {
+  getRecentAlerts: async (limit: number = 4): Promise<{ alerts: Alert[]; cameras: Camera[] }> => {
     try {
       const response = await apiClient.get(`/alerts/recent/?limit=${limit}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching recent alerts:', error);
       throw error;

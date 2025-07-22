@@ -2,10 +2,11 @@ import apiClient from "./axiosConfig";
 import { toast } from "@/hooks/use-toast";
 
 export interface Camera {
-  id: string;
+  id: number;
   name: string;
-  status: string;
+  status: "online" | "offline";
   stream_url: string;
+  last_online: string | null;
 }
 
 export interface AddCameraData {

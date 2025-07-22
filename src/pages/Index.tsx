@@ -2,33 +2,13 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { AlertCard } from "@/components/dashboard/AlertCard";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { AuthorizedFacesCard } from "@/components/dashboard/AuthorizedFaces";
-import { Bell, Calendar, Camera, Clock, ShieldAlert } from "lucide-react";
+import { Bell, Calendar, Clock, ShieldAlert } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { alertsService, type Alert } from "@/lib/api/alertsService";
+import { type Camera } from "@/lib/api/camerasService";
 
-// Mock data for cameras
-const cameras = [
-  {
-    id: "1",
-    name: "Living Room",
-    stream_url: "rtsp://user:pass@192.168.1.100:554/stream1",
-    isConnected: true,
-  },
-  {
-    id: "2",
-    name: "Kitchen",
-    stream_url: "rtsp://user:pass@192.168.1.101:554/stream1",
-    isConnected: true,
-  },
-  {
-    id: "3",
-    name: "Front Door",
-    stream_url: "rtsp://user:pass@192.168.1.102:554/stream1",
-    isConnected: false,
-  },
-];
 
 // Add CSS for the badge pulse animation
 const badgePulseStyle = `
@@ -52,6 +32,7 @@ const badgePulseStyle = `
 const Index = () => {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [cameras, setCameras] = useState<Camera[]>([]);
   const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
 
   useEffect(() => {
@@ -76,9 +57,10 @@ const Index = () => {
     const fetchRecentAlerts = async () => {
       try {
         setIsLoadingAlerts(true);
-        const recentAlerts = await alertsService.getRecentAlerts(4);
-        console.log(recentAlerts);
-        setAlerts(recentAlerts.data || []);
+        const response = await alertsService.getRecentAlerts(4);
+        console.log(response);
+        setAlerts(response.alerts || []);
+        setCameras(response.cameras || []);
       } catch (error) {
         console.error('Failed to fetch recent alerts:', error);
       } finally {
@@ -99,31 +81,19 @@ const Index = () => {
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
           <StatCard
             title="Active Cameras"
-            value={cameras.filter((c) => c.isConnected).length}
+            value={cameras.filter((c) => c.status === "online").length}
             description={`${cameras.length} total cameras configured`}
-            icon={<Camera className="h-4 w-4" />}
+            icon={<Clock className="h-4 w-4" />}
           />
           <StatCard
             title="Alerts Today"
             value={alerts.length}
-            trend={{ value: 12, isPositive: false }}
             icon={<Bell className="h-4 w-4" />}
           />
-          <StatCard
-            title="Uptime"
-            value="99.2%"
-            description="Last 30 days"
-            icon={<Clock className="h-4 w-4" />}
-          />
-          <StatCard
-            title="Last Check"
-            value="2 mins ago"
-            description="System performing normally"
-            icon={<ShieldAlert className="h-4 w-4" />}
-          />
+          
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4">
           <h1 className="text-2xl font-semibold tracking-tight">

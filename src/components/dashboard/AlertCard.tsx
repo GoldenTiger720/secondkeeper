@@ -66,21 +66,47 @@ export function AlertCard({
   const { toast } = useToast();
 
   // Generate a video URL based on alert ID if not provided
-  const actualVideoUrl = videoUrl;
+  const actualVideoUrl = "https://api.secondkeeper.com" + videoUrl;
 
-  const handleDownload = () => {
-    // Create a link element to trigger the download
-    const link = document.createElement("a");
-    link.href = actualVideoUrl;
-    link.download = `alert-${id}-${type}.mp4`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    try {
+      toast({
+        title: "Download Starting",
+        description: `Fetching video clip for ${type} alert...`,
+      });
 
-    toast({
-      title: "Download Started",
-      description: `Downloading video clip for ${type} alert.`,
-    });
+      // Fetch the video as a blob
+      const response = await fetch(actualVideoUrl);
+      if (!response.ok) {
+        throw new Error('Failed to fetch video');
+      }
+      
+      const blob = await response.blob();
+      
+      // Create a blob URL and download link
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `alert-${id}-${type}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      URL.revokeObjectURL(blobUrl);
+
+      toast({
+        title: "Download Complete",
+        description: `Video clip for ${type} alert downloaded successfully.`,
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: "Could not download the video clip. Please try again.",
+      });
+    }
   };
 
   return (
@@ -92,7 +118,7 @@ export function AlertCard({
               className="absolute inset-0 bg-cover bg-center"
               style={{
                 backgroundImage: `url(${
-                  thumbnailUrl ||
+                  "https://api.secondkeeper.com" + thumbnailUrl ||
                   "https://via.placeholder.com/300x200?text=No+Preview"
                 })`,
               }}

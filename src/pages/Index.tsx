@@ -5,48 +5,10 @@ import { AuthorizedFacesCard } from "@/components/dashboard/AuthorizedFaces";
 import { Bell, Calendar, Camera, Clock, ShieldAlert } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { alertsService, type Alert } from "@/lib/api/alertsService";
 
-// Mock data
-const alerts = [
-  {
-    id: "1",
-    type: "fall" as const,
-    status: "new" as const,
-    timestamp: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
-    camera: "Living Room",
-    videoUrl: "/videos/detected/fall_clip.mp4",
-    thumbnailUrl: "/images/thumnail/fall_clip.png",
-  },
-  {
-    id: "2",
-    type: "violence" as const,
-    status: "confirmed" as const,
-    timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
-    camera: "Living Room",
-    videoUrl: "/videos/detected/violence_clip.mp4",
-    thumbnailUrl: "/images/thumnail/violence_clip.png",
-  },
-  {
-    id: "3",
-    type: "choking" as const,
-    status: "dismissed" as const,
-    timestamp: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-    camera: "Front Door",
-    videoUrl: "/videos/detected/choking_clip.mp4",
-    thumbnailUrl: "/images/thumnail/choking_clip.png",
-  },
-  {
-    id: "4",
-    type: "fire" as const,
-    status: "confirmed" as const,
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    camera: "Garage",
-    videoUrl: "/videos/detected/fire_clip.mp4",
-    thumbnailUrl: "/images/thumnail/fire_clip.png",
-  },
-];
-
+// Mock data for cameras
 const cameras = [
   {
     id: "1",
@@ -89,6 +51,8 @@ const badgePulseStyle = `
 
 const Index = () => {
   const navigate = useNavigate();
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
 
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
@@ -107,6 +71,23 @@ const Index = () => {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchRecentAlerts = async () => {
+      try {
+        setIsLoadingAlerts(true);
+        const recentAlerts = await alertsService.getRecentAlerts(4);
+        console.log(recentAlerts);
+        setAlerts(recentAlerts.data || []);
+      } catch (error) {
+        console.error('Failed to fetch recent alerts:', error);
+      } finally {
+        setIsLoadingAlerts(false);
+      }
+    };
+
+    fetchRecentAlerts();
+  }, []);
 
   return (
     <DashboardLayout>
@@ -150,9 +131,28 @@ const Index = () => {
           </h1>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {alerts.map((alert) => (
-            <AlertCard key={alert.id} {...alert} />
-          ))}
+          {isLoadingAlerts ? (
+            <div className="col-span-2 text-center py-8 text-muted-foreground">
+              Loading alerts...
+            </div>
+          ) : alerts.length > 0 ? (
+            alerts.map((alert) => (
+              <AlertCard
+                key={alert.id}
+                id={alert.id.toString()}
+                type={alert.alert_type}
+                status={alert.status}
+                timestamp={new Date(alert.detection_time)}
+                camera={alert.camera_name}
+                videoUrl={alert.video_file}
+                thumbnailUrl={alert.thumbnail}
+              />
+            ))
+          ) : (
+            <div className="col-span-2 text-center py-8 text-muted-foreground">
+              No recent alerts
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

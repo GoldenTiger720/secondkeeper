@@ -3,14 +3,19 @@ import apiClient from './axiosConfig';
 import { toast } from "@/hooks/use-toast";
 
 export interface Alert {
-  id: string;
-  camera_name: string;
-  camera_location?: string;
+  id: number;
   alert_type: "fall" | "violence" | "choking" | "fire";
+  camera_name: string;
+  confidence: number;
+  detection_time: string;
+  is_pending_review: boolean;
+  severity: "critical" | "high" | "medium" | "low";
   status: "new" | "confirmed" | "dismissed";
-  video_path?: string;
-  thumbnail_path?: string;
-  created_at: string;
+  thumbnail: string;
+  time_since_detection: string;
+  title: string;
+  user_name: string;
+  video_file: string;
 }
 
 export const alertsService = {
@@ -29,7 +34,7 @@ export const alertsService = {
     }
   },
 
-  getRecentAlerts: async (limit: number = 5): Promise<Alert[]> => {
+  getRecentAlerts: async (limit: number = 4): Promise<{ data: Alert[] }> => {
     try {
       const response = await apiClient.get(`/alerts/recent/?limit=${limit}`);
       return response.data;
